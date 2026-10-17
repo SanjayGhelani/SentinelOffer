@@ -1,0 +1,10 @@
+[package]
+name = "sentinel-scheme-calculator"
+version = "1.0.0"
+description = "Sentinel Genesis Technologies scheme calculator static web app"
+
+[dependencies]
+"wasmer/static-web-server" = "1"
+
+[fs]
+public = "."
