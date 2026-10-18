@@ -13,6 +13,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -93,10 +94,11 @@
                         <i class="fa-solid fa-user-circle text-indigo-400"></i>
                         <span id="current-user-display" class="font-medium text-slate-300">User</span>
                     </div>
-                    <button type="button" onclick="exportToPDF()" class="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-slate-700">
+                    <div class="flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-800 p-1">
                         <i class="fa-solid fa-file-pdf text-red-400"></i>
-                        <span class="hidden sm:inline">Export PDF</span>
-                    </button>
+                        <button type="button" onclick="exportToPDF('partner')" class="rounded px-2 py-1 text-[10px] font-semibold text-slate-200 hover:bg-slate-700" title="Export partner-facing PDF">Partner PDF</button>
+                        <button type="button" onclick="exportToPDF('management')" class="rounded px-2 py-1 text-[10px] font-semibold text-slate-200 hover:bg-slate-700" title="Export internal management PDF">Management PDF</button>
+                    </div>
                     <button type="button" onclick="handleLogout()" class="flex items-center gap-2 rounded-lg border border-red-900/60 px-3 py-2 text-xs font-semibold text-red-400 transition hover:bg-red-950/40">
                         <i class="fa-solid fa-right-from-bracket"></i>
                         <span class="hidden sm:inline">Logout</span>
@@ -105,7 +107,22 @@
             </div>
         </header>
 
-        <main class="mx-auto w-full max-w-7xl flex-1 space-y-3 px-3 py-4 sm:px-5 lg:px-8">
+        <div id="workspace-shell" class="mx-auto flex w-full max-w-[100rem] flex-1 flex-col gap-3 px-3 py-4 sm:px-5 lg:flex-row lg:px-8">
+            <aside id="variant-sidebar" class="no-print w-full shrink-0 rounded-xl border border-slate-800 bg-slate-950/80 p-3 lg:w-64" aria-label="Variant library">
+                <div class="mb-3 flex items-center justify-between gap-2">
+                    <h2 class="text-xs font-bold uppercase tracking-wide text-indigo-300">Variant Library</h2>
+                    <button id="add-variant" type="button" class="rounded-md border border-indigo-700/60 bg-indigo-950/60 px-2 py-1 text-[10px] font-semibold text-indigo-200 hover:bg-indigo-900/60">＋ Add New</button>
+                </div>
+                <p id="library-status" class="mb-2 hidden rounded-md border px-2 py-1.5 text-[10px]" role="status" aria-live="polite"></p>
+                <div id="variant-groups" class="space-y-2"></div>
+                <div class="mt-3 grid grid-cols-2 gap-2">
+                    <button id="export-library" type="button" class="rounded-md border border-slate-700 bg-slate-900 px-2 py-1.5 text-[10px] font-semibold text-slate-300 hover:border-slate-600">📥 Export JSON</button>
+                    <button id="import-library-trigger" type="button" class="rounded-md border border-slate-700 bg-slate-900 px-2 py-1.5 text-[10px] font-semibold text-slate-300 hover:border-slate-600">📤 Import JSON</button>
+                    <input id="import-library-file" type="file" accept="application/json,.json" class="hidden">
+                </div>
+            </aside>
+
+        <main id="calculator-workspace" class="min-w-0 flex-1 space-y-3">
             <div class="print-only mb-3 hidden border-b border-slate-300 pb-2">
                 <h1 class="text-xl font-bold text-black">Sentinel Genesis Scheme Calculator</h1>
                 <p class="text-xs text-slate-600">Generated <span id="print-date"></span></p>
@@ -116,16 +133,26 @@
                     <h1 class="text-xl font-bold tracking-tight text-white">Scheme Calculator</h1>
                     <p class="text-xs text-slate-400">Spreadsheet-style per-key scheme and profitability model</p>
                 </div>
-                <button id="reset-calculator" type="button" class="no-print rounded-md border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-700">
-                    <i class="fa-solid fa-rotate-left mr-1"></i>Reset Calculator
-                </button>
+                <div class="flex flex-wrap items-center gap-2 no-print">
+                    <button id="toggle-library" type="button" aria-expanded="true" class="rounded-md border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-700">📂 Variant Library</button>
+                    <button id="save-variant" type="button" class="rounded-md border border-emerald-800/70 bg-emerald-950/40 px-3 py-1.5 text-xs font-semibold text-emerald-300 hover:bg-emerald-900/50">💾 Save as New Variant</button>
+                    <button id="reset-calculator" type="button" class="rounded-md border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-700">
+                        <i class="fa-solid fa-rotate-left mr-1"></i>Reset Defaults
+                    </button>
+                </div>
             </section>
-
-            <nav class="flex flex-wrap gap-1 rounded-lg border border-slate-800 bg-slate-900/70 p-1 no-print" aria-label="Product selection">
-                <button type="button" data-product="AV" aria-pressed="false" class="product-tab rounded-md border border-transparent px-3 py-1.5 text-xs font-semibold text-slate-400 transition">Antivirus (AV)</button>
-                <button type="button" data-product="IS" aria-pressed="false" class="product-tab rounded-md border border-transparent px-3 py-1.5 text-xs font-semibold text-slate-400 transition">Internet Security (IS)</button>
-                <button type="button" data-product="TS" aria-pressed="true" class="product-tab rounded-md border border-indigo-500 bg-indigo-900/40 px-3 py-1.5 text-xs font-semibold text-white transition">Total Security (TS)</button>
-            </nav>
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <nav class="flex flex-wrap gap-1 rounded-lg border border-slate-800 bg-slate-900/70 p-1 no-print" aria-label="Product selection">
+                    <button type="button" data-product="AV" aria-pressed="false" class="product-tab rounded-md border border-transparent px-3 py-1.5 text-xs font-semibold text-slate-400 transition">Antivirus (AV)</button>
+                    <button type="button" data-product="IS" aria-pressed="false" class="product-tab rounded-md border border-transparent px-3 py-1.5 text-xs font-semibold text-slate-400 transition">Internet Security (IS)</button>
+                    <button type="button" data-product="TS" aria-pressed="true" class="product-tab rounded-md border border-indigo-500 bg-indigo-900/40 px-3 py-1.5 text-xs font-semibold text-white transition">Total Security (TS)</button>
+                </nav>
+                <div class="flex flex-wrap gap-1.5 text-[10px]">
+                    <span class="rounded-full border border-slate-700 bg-slate-900 px-2.5 py-1 text-slate-300">T1 Billing: <strong id="tier-t1-summary" class="text-amber-300">—</strong></span>
+                    <span class="rounded-full border border-slate-700 bg-slate-900 px-2.5 py-1 text-slate-300">T2 Billing: <strong id="tier-t2-summary" class="text-cyan-300">—</strong></span>
+                    <span class="rounded-full border border-indigo-800 bg-indigo-950/50 px-2.5 py-1 text-indigo-200">T3 MOP: <strong id="tier-t3-summary" class="text-white">—</strong></span>
+                </div>
+            </div>
 
             <section class="cyber-card overflow-hidden rounded-xl">
                 <div class="border-b border-slate-700 px-3 py-2">
@@ -305,13 +332,65 @@
                     <strong id="overall-profit" class="text-xl font-extrabold">—</strong>
                 </div>
             </section>
+            <section class="cyber-card overflow-hidden rounded-xl">
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-700 px-3 py-2">
+                    <div>
+                        <h2 class="text-xs font-bold uppercase tracking-wide text-indigo-300">Market Price List</h2>
+                        <p class="text-[10px] text-slate-500">Tier prices are pre-GST: T2 = MOP − T2 margin; T1 = T2 − T1 margin.</p>
+                    </div>
+                    <div class="flex flex-wrap gap-1 no-print" role="group" aria-label="Price list tier filter">
+                        <button type="button" data-tier-filter="all" aria-pressed="true" class="tier-filter rounded border border-indigo-600 bg-indigo-950/60 px-2 py-1 text-[10px] font-semibold text-indigo-200">All Tiers</button>
+                        <button type="button" data-tier-filter="T1" aria-pressed="false" class="tier-filter rounded border border-slate-700 px-2 py-1 text-[10px] font-semibold text-slate-400">Tier 1 View</button>
+                        <button type="button" data-tier-filter="T2" aria-pressed="false" class="tier-filter rounded border border-slate-700 px-2 py-1 text-[10px] font-semibold text-slate-400">Tier 2 View</button>
+                        <button type="button" data-tier-filter="T3" aria-pressed="false" class="tier-filter rounded border border-slate-700 px-2 py-1 text-[10px] font-semibold text-slate-400">Tier 3 View</button>
+                    </div>
+                </div>
+                <div class="sheet-scroll overflow-x-auto">
+                    <table class="sheet-table w-full min-w-[850px] text-left text-[11px]">
+                        <thead class="bg-slate-900/70 text-[10px] uppercase tracking-wide text-slate-400">
+                            <tr>
+                                <th data-tier-col="common">Product Name</th>
+                                <th data-tier-col="common">Duration</th>
+                                <th data-tier-col="common">Tax Mode</th>
+                                <th data-tier-col="T1">T1 Net Price</th>
+                                <th data-tier-col="T2">T2 Net Price</th>
+                                <th data-tier-col="T3">T3 MOP</th>
+                                <th data-tier-col="common">Net Company Margin (₹)</th>
+                                <th data-tier-col="common">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="market-price-list"></tbody>
+                    </table>
+                </div>
+            </section>
         </main>
+        </div>
 
         <footer class="mt-auto border-t border-slate-800 bg-cyber-800 py-3 no-print">
             <div class="mx-auto max-w-7xl px-4 text-center text-[10px] text-slate-500">
                 Sentinel Genesis Technologies Pvt Ltd &bull; Scheme &amp; Pricing Engine
             </div>
         </footer>
+        <dialog id="variant-dialog" class="w-[min(92vw,28rem)] rounded-xl border border-slate-700 bg-slate-900 p-0 text-slate-100 shadow-2xl backdrop:bg-black/70">
+            <form id="variant-form" class="space-y-3 p-4">
+                <div>
+                    <h2 id="variant-dialog-title" class="text-sm font-bold text-white">Create Variant</h2>
+                    <p class="mt-1 text-[11px] text-slate-400">The new SKU starts as a copy of the active variant.</p>
+                </div>
+                <label class="block text-[11px] font-medium text-slate-400">
+                    Variant title
+                    <input id="variant-title-input" required maxlength="120" class="sheet-input mt-1 block" placeholder="Example: TS 3-Yr - 1000 Key Special Deal">
+                </label>
+                <label id="variant-duration-field" class="block text-[11px] font-medium text-slate-400">
+                    Duration or deal label
+                    <input id="variant-duration-input" required maxlength="40" class="sheet-input mt-1 block" placeholder="5 Years, 10 Years, Lifetime, or Bulk Deal">
+                </label>
+                <div class="flex justify-end gap-2 pt-1">
+                    <button id="cancel-variant" type="button" class="rounded-md border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800">Cancel</button>
+                    <button type="submit" class="rounded-md border border-indigo-600 bg-indigo-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-600">Save Variant</button>
+                </div>
+            </form>
+        </dialog>
     </div>
 
     <script>
@@ -350,22 +429,103 @@
             'activation-percent': 'activationBonusPct',
             'scheme-volume': 'volume'
         };
-        function createSchemeConfigurations() {
-            return Object.fromEntries(Object.entries(DEFAULT_SCHEME_DATA).map(([product, durations]) => [
-                product,
-                Object.fromEntries(Object.entries(durations).map(([duration, values]) => [duration, { ...values }]))
-            ]));
-        }
-        const state = {
-            selectedProduct: 'TS',
-            selectedDuration: '1',
-            configurations: createSchemeConfigurations(),
-            mopFollowsBase: true
-        };
+        const LIBRARY_STORAGE_KEY = 'sentinel_variant_library_v1';
+        const state = { library: [], activeVariantId: null, mopFollowsBase: true, tierFilter: 'all' };
         const currencyFormatter = new Intl.NumberFormat('en-IN', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
+
+        function createDefaultLibrary() {
+            return Object.entries(DEFAULT_SCHEME_DATA).flatMap(([product, durations]) =>
+                Object.entries(durations).map(([duration, config]) => ({
+                    id: `default-${product}-${duration}`,
+                    title: `${productNames[product]} - ${duration} Year${duration === '1' ? '' : 's'}`,
+                    product,
+                    duration: `${duration} Year${duration === '1' ? '' : 's'}`,
+                    category: product,
+                    isDefault: true,
+                    taxMode: 'exclusive',
+                    mop: null,
+                    config: { ...config }
+                }))
+            );
+        }
+
+        function isValidVariant(variant) {
+            const fields = Object.values(durationInputMap);
+            return variant && typeof variant === 'object'
+                && typeof variant.id === 'string' && variant.id.length > 0 && variant.id.length <= 120
+                && typeof variant.title === 'string' && variant.title.trim().length > 0 && variant.title.length <= 120
+                && typeof variant.product === 'string' && Object.hasOwn(productNames, variant.product)
+                && typeof variant.duration === 'string' && variant.duration.trim().length > 0 && variant.duration.length <= 40
+                && ['AV', 'IS', 'TS', 'custom'].includes(variant.category)
+                && (variant.taxMode === 'exclusive' || variant.taxMode === 'inclusive')
+                && (variant.mop === null || (Number.isFinite(variant.mop) && variant.mop >= 0))
+                && variant.config && typeof variant.config === 'object'
+                && fields.every(field => Number.isFinite(variant.config[field]) && variant.config[field] >= 0);
+        }
+
+        function normalizeVariants(input) {
+            const variants = Array.isArray(input) ? input : input?.variants;
+            if (!Array.isArray(variants) || variants.length < 1 || variants.length > 500
+                || variants.some(variant => !isValidVariant(variant))
+                || new Set(variants.map(variant => variant.id)).size !== variants.length) {
+                throw new Error('JSON must contain 1–500 valid variants with unique IDs and complete pricing fields.');
+            }
+            return variants.map(variant => ({
+                id: variant.id,
+                title: variant.title.trim(),
+                product: variant.product,
+                duration: variant.duration.trim(),
+                category: variant.category,
+                isDefault: Boolean(variant.isDefault),
+                taxMode: variant.taxMode,
+                mop: variant.mop,
+                config: Object.fromEntries(Object.values(durationInputMap).map(field => [field, Number(variant.config[field])]))
+            }));
+        }
+
+        function showLibraryStatus(message, type = 'success') {
+            const status = document.getElementById('library-status');
+            status.hidden = false;
+            status.textContent = message;
+            status.className = type === 'error'
+                ? 'mb-2 rounded-md border border-rose-800 bg-rose-950/50 px-2 py-1.5 text-[10px] text-rose-200'
+                : 'mb-2 rounded-md border border-emerald-800 bg-emerald-950/50 px-2 py-1.5 text-[10px] text-emerald-200';
+        }
+
+        function persistLibrary() {
+            try {
+                localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify(state.library));
+                return true;
+            } catch (error) {
+                showLibraryStatus('Could not save the variant library. Check browser storage availability.', 'error');
+                return false;
+            }
+        }
+
+        function loadLibrary() {
+            let stored;
+            try {
+                stored = localStorage.getItem(LIBRARY_STORAGE_KEY);
+            } catch (error) {
+                showLibraryStatus('Browser storage is unavailable. Library changes cannot be saved.', 'error');
+                return createDefaultLibrary();
+            }
+            if (stored === null) {
+                const defaults = createDefaultLibrary();
+                state.library = defaults;
+                persistLibrary();
+                return defaults;
+            }
+            try {
+                return normalizeVariants(JSON.parse(stored));
+            } catch (error) {
+                showLibraryStatus('Saved library data is invalid. Embedded defaults are loaded; import a valid catalog or reset defaults.', 'error');
+                return createDefaultLibrary();
+            }
+        }
 
         function formatCurrency(value) {
             return `₹ ${currencyFormatter.format(value)}`;
@@ -383,14 +543,128 @@
             return value !== '' && Number.isFinite(Number(value));
         }
 
+        function getActiveVariant() {
+            return state.library.find(variant => variant.id === state.activeVariantId) || null;
+        }
+
+        function getVariantMetrics(variant) {
+            const config = variant.config;
+            const mop = variant.mop === null
+                ? (variant.taxMode === 'inclusive' ? config.basePrice / (1 + GST_RATE) : config.basePrice)
+                : variant.mop;
+            const productionCost = config.keyGen + config.partnerMargin + config.boxMfg + config.t1Margin + config.t2Margin;
+            const stockCost = mop * config.stockSchemePct / 100;
+            const activationCost = mop * config.activationBonusPct / 100;
+            return {
+                mop,
+                t2Price: mop - config.t2Margin,
+                t1Price: mop - config.t2Margin - config.t1Margin,
+                productionCost,
+                netCompanyMargin: mop - stockCost - config.rewardKeyCost - activationCost - productionCost
+            };
+        }
+
+        function renderVariantLibrary() {
+            const container = document.getElementById('variant-groups');
+            container.replaceChildren();
+            [
+                { key: 'AV', label: 'Antivirus (AV)' },
+                { key: 'IS', label: 'Internet Security (IS)' },
+                { key: 'TS', label: 'Total Security (TS)' },
+                { key: 'custom', label: 'Custom Variants' }
+            ].forEach(group => {
+                const variants = state.library.filter(variant => variant.category === group.key);
+                const details = document.createElement('details');
+                details.open = variants.length > 0;
+                details.className = 'overflow-hidden rounded-lg border border-slate-800 bg-slate-900/60';
+                const summary = document.createElement('summary');
+                summary.className = 'cursor-pointer list-none px-2.5 py-2 text-[11px] font-semibold text-slate-300 hover:bg-slate-800/70';
+                summary.textContent = `${group.label} (${variants.length})`;
+                details.append(summary);
+                const list = document.createElement('div');
+                list.className = 'space-y-1 p-1.5';
+                if (!variants.length) {
+                    const empty = document.createElement('p');
+                    empty.className = 'px-2 py-1 text-[10px] text-slate-600';
+                    empty.textContent = 'No variants saved.';
+                    list.append(empty);
+                }
+                variants.forEach(variant => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = variant.id === state.activeVariantId
+                        ? 'w-full rounded-md border border-indigo-500 bg-indigo-950/60 px-2 py-1.5 text-left text-[10px] font-semibold text-indigo-100 shadow-md shadow-indigo-950/40'
+                        : 'w-full rounded-md border border-transparent px-2 py-1.5 text-left text-[10px] text-slate-400 hover:border-slate-700 hover:bg-slate-800/70 hover:text-slate-100';
+                    const title = document.createElement('span');
+                    title.className = 'block truncate';
+                    title.textContent = variant.title;
+                    const subtitle = document.createElement('span');
+                    subtitle.className = 'mt-0.5 block text-[9px] text-slate-500';
+                    subtitle.textContent = `${variant.duration} · ${variant.taxMode === 'inclusive' ? 'GST incl.' : 'GST excl.'}`;
+                    button.append(title, subtitle);
+                    button.addEventListener('click', () => loadVariant(variant.id));
+                    list.append(button);
+                });
+                details.append(list);
+                container.append(details);
+            });
+        }
+
+        function renderDurationOptions(variant) {
+            const select = document.getElementById('duration');
+            const durations = [...new Set(state.library
+                .filter(item => item.product === variant.product)
+                .map(item => item.duration))];
+            select.replaceChildren();
+            durations.forEach(duration => {
+                const option = document.createElement('option');
+                option.value = duration;
+                option.textContent = duration;
+                select.append(option);
+            });
+            select.value = variant.duration;
+        }
+
+        function loadVariant(variantId) {
+            const variant = state.library.find(item => item.id === variantId);
+            if (!variant) {
+                showLibraryStatus('That variant is no longer available in the library.', 'error');
+                return;
+            }
+            state.activeVariantId = variant.id;
+            state.mopFollowsBase = variant.mop === null;
+            Object.entries(durationInputMap).forEach(([inputId, field]) => {
+                document.getElementById(inputId).value = variant.config[field];
+            });
+            document.getElementById('tax-mode').value = variant.taxMode;
+            document.getElementById('mop').value = variant.mop === null ? '' : variant.mop;
+            renderDurationOptions(variant);
+            updateProductTabs();
+            renderVariantLibrary();
+            calculate();
+        }
+
         function updateProductTabs() {
+            const variant = getActiveVariant();
             document.querySelectorAll('[data-product]').forEach(button => {
-                const active = button.dataset.product === state.selectedProduct;
-                button.setAttribute('aria-pressed', String(active));
+                const active = variant && button.dataset.product === variant.product;
+                button.setAttribute('aria-pressed', String(Boolean(active)));
                 button.className = active
                     ? 'product-tab rounded-md border border-indigo-500 bg-indigo-900/40 px-3 py-1.5 text-xs font-semibold text-white transition'
                     : 'product-tab rounded-md border border-transparent px-3 py-1.5 text-xs font-semibold text-slate-400 transition hover:border-slate-700 hover:text-white';
             });
+        }
+
+        function persistActiveInput(input) {
+            const variant = getActiveVariant();
+            if (!variant) return;
+            const field = durationInputMap[input.id];
+            if (field) variant.config[field] = input.value === '' ? 0 : Number(input.value);
+            if (input.id === 'mop') {
+                variant.mop = input.value === '' ? null : Number(input.value);
+                state.mopFollowsBase = variant.mop === null;
+            }
+            persistLibrary();
         }
 
         function updateUnitPrice() {
@@ -409,26 +683,6 @@
             const finalUnitPrice = inclusive ? basePrice : basePrice * (1 + GST_RATE);
             unitPrice.textContent = formatCurrency(finalUnitPrice);
             note.textContent = `${inclusive ? 'Includes' : 'Plus'} 18% GST · ${duration}`;
-        }
-
-        function getActiveConfiguration() {
-            return state.configurations[state.selectedProduct][state.selectedDuration];
-        }
-
-        function saveActiveInput(input) {
-            const field = durationInputMap[input.id];
-            if (field) {
-                getActiveConfiguration()[field] = Number(input.value);
-            }
-        }
-
-        function loadActiveConfiguration() {
-            const configuration = getActiveConfiguration();
-            Object.entries(durationInputMap).forEach(([inputId, field]) => {
-                document.getElementById(inputId).value = configuration[field];
-            });
-            document.getElementById('mop').value = '';
-            state.mopFollowsBase = true;
         }
 
         function getNetMopFromBase() {
@@ -468,11 +722,13 @@
         }
 
         function calculate() {
-            const basePriceInput = document.getElementById('base-price');
             const netMop = getNetMopFromBase();
             if (state.mopFollowsBase) {
                 document.getElementById('mop').value = netMop;
             }
+            const activeVariant = getActiveVariant();
+            if (!activeVariant) return;
+            if (state.mopFollowsBase) activeVariant.mop = null;
 
             const productionCost = [
                 'key-generation-cost',
@@ -498,6 +754,12 @@
             const stockDeduction = mop * stockPercent / 100;
             const activationDeduction = mop * activationPercent / 100;
             const perKeyProfit = mop - stockDeduction - rewardCost - activationDeduction - productionCost;
+            const tierT3 = mop;
+            const tierT2 = tierT3 - readNumber('t2-margin');
+            const tierT1 = tierT2 - readNumber('t1-margin');
+            document.getElementById('tier-t1-summary').textContent = mopIsSet ? formatCurrency(tierT1) : '—';
+            document.getElementById('tier-t2-summary').textContent = mopIsSet ? formatCurrency(tierT2) : '—';
+            document.getElementById('tier-t3-summary').textContent = mopIsSet ? formatCurrency(tierT3) : '—';
 
             document.getElementById('mop-display').textContent = mopIsSet ? formatCurrency(mop) : '—';
             document.getElementById('stock-deduction').textContent = mopIsSet ? formatCurrency(stockDeduction) : '—';
@@ -519,32 +781,272 @@
             document.getElementById('total-reward-cost').textContent = mopIsSet ? formatCurrency(rewardCost * volume) : '—';
             document.getElementById('total-activation-cost').textContent = mopIsSet ? formatCurrency(activationDeduction * volume) : '—';
             updateProfitBanner('overall-profit-banner', 'overall-profit', mopIsSet ? perKeyProfit * volume : NaN);
+            renderMarketPriceList();
         }
 
         function selectProduct(productCode) {
             if (!Object.hasOwn(productNames, productCode)) return;
-            state.selectedProduct = productCode;
-            loadActiveConfiguration();
-            updateProductTabs();
-            calculate();
+            const active = getActiveVariant();
+            if (active?.product === productCode) return;
+            const sameDuration = state.library.find(variant =>
+                variant.product === productCode && active && variant.duration === active.duration
+            );
+            const fallback = state.library.find(variant => variant.product === productCode);
+            const nextVariant = sameDuration || fallback;
+            if (nextVariant) loadVariant(nextVariant.id);
         }
 
         function selectDuration(duration) {
-            if (!Object.hasOwn(DEFAULT_SCHEME_DATA[state.selectedProduct], duration)) return;
-            state.selectedDuration = duration;
-            loadActiveConfiguration();
-            calculate();
+            const active = getActiveVariant();
+            if (active && active.duration === duration) return;
+            const variant = state.library.find(item =>
+                active && item.product === active.product && item.duration === duration
+            );
+            if (variant) loadVariant(variant.id);
         }
 
         function resetCalculator() {
-            state.configurations = createSchemeConfigurations();
-            state.selectedProduct = 'TS';
-            state.selectedDuration = '1';
-            document.getElementById('duration').value = '1 Year';
-            document.getElementById('tax-mode').value = 'exclusive';
-            loadActiveConfiguration();
-            updateProductTabs();
-            calculate();
+            if (!window.confirm('Restore the 9 standard variants and remove all custom variants and edits from this browser?')) return;
+            const previousLibrary = state.library;
+            const previousActiveId = state.activeVariantId;
+            state.library = createDefaultLibrary();
+            state.activeVariantId = 'default-TS-1';
+            if (!persistLibrary()) {
+                state.library = previousLibrary;
+                state.activeVariantId = previousActiveId;
+                loadVariant(previousActiveId);
+                return;
+            }
+            loadVariant(state.activeVariantId);
+            showLibraryStatus('Standard catalog restored. Custom variants and edits were removed.', 'success');
+        }
+
+        function renderMarketPriceList() {
+            const body = document.getElementById('market-price-list');
+            body.replaceChildren();
+            state.library.forEach(variant => {
+                const metrics = getVariantMetrics(variant);
+                const row = document.createElement('tr');
+                row.className = variant.id === state.activeVariantId ? 'bg-indigo-950/30' : 'hover:bg-slate-800/30';
+                [
+                    ['common', productNames[variant.product]],
+                    ['common', variant.duration],
+                    ['common', variant.taxMode === 'inclusive' ? 'Inclusive GST' : 'Exclusive GST'],
+                    ['T1', formatCurrency(metrics.t1Price)],
+                    ['T2', formatCurrency(metrics.t2Price)],
+                    ['T3', formatCurrency(metrics.mop)],
+                    ['common', formatCurrency(metrics.netCompanyMargin)],
+                    ['common', variant.id === state.activeVariantId ? 'Active' : variant.category === 'custom' ? 'Custom' : 'Standard']
+                ].forEach(([tier, value]) => {
+                    const cell = document.createElement('td');
+                    cell.dataset.tierCol = tier;
+                    cell.className = tier === 'common' ? 'whitespace-nowrap text-slate-300' : 'whitespace-nowrap font-semibold text-amber-300';
+                    cell.textContent = value;
+                    row.append(cell);
+                });
+                body.append(row);
+            });
+            applyTierFilter();
+        }
+
+        function applyTierFilter() {
+            document.querySelectorAll('[data-tier-col]').forEach(cell => {
+                cell.hidden = state.tierFilter !== 'all'
+                    && cell.dataset.tierCol !== 'common'
+                    && cell.dataset.tierCol !== state.tierFilter;
+            });
+            document.querySelectorAll('[data-tier-filter]').forEach(button => {
+                const active = button.dataset.tierFilter === state.tierFilter;
+                button.setAttribute('aria-pressed', String(active));
+                button.className = active
+                    ? 'tier-filter rounded border border-indigo-600 bg-indigo-950/60 px-2 py-1 text-[10px] font-semibold text-indigo-200'
+                    : 'tier-filter rounded border border-slate-700 px-2 py-1 text-[10px] font-semibold text-slate-400';
+            });
+        }
+
+        function createVariantId() {
+            return `custom-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        }
+
+        function cloneActiveVariant(title, duration) {
+            const active = getActiveVariant();
+            if (!active) {
+                showLibraryStatus('Select a variant before creating another one.', 'error');
+                return null;
+            }
+            if (state.library.length >= 500) {
+                showLibraryStatus('The variant library limit is 500 entries. Export or remove variants before adding more.', 'error');
+                return null;
+            }
+            const variant = {
+                id: createVariantId(),
+                title,
+                product: active.product,
+                duration,
+                category: 'custom',
+                isDefault: false,
+                taxMode: document.getElementById('tax-mode').value,
+                mop: state.mopFollowsBase ? null : readNumber('mop'),
+                config: Object.fromEntries(Object.values(durationInputMap).map(field => [field, active.config[field]]))
+            };
+            state.library.push(variant);
+            if (!persistLibrary()) {
+                state.library.pop();
+                return null;
+            }
+            renderVariantLibrary();
+            return variant;
+        }
+
+        function openVariantDialog(mode) {
+            const active = getActiveVariant();
+            if (!active) {
+                showLibraryStatus('Select a variant before creating another one.', 'error');
+                return;
+            }
+            const dialog = document.getElementById('variant-dialog');
+            dialog.dataset.mode = mode;
+            document.getElementById('variant-dialog-title').textContent =
+                mode === 'clone' ? 'Save as New Variant' : 'Add New Variant';
+            document.getElementById('variant-title-input').value =
+                mode === 'clone' ? `${active.title} - Copy` : '';
+            document.getElementById('variant-duration-field').hidden = mode !== 'new';
+            document.getElementById('variant-duration-input').required = mode === 'new';
+            document.getElementById('variant-duration-input').value = mode === 'new' ? '5 Years' : active.duration;
+            dialog.showModal();
+            document.getElementById('variant-title-input').focus();
+        }
+
+        function submitVariantForm(event) {
+            event.preventDefault();
+            const dialog = document.getElementById('variant-dialog');
+            const title = document.getElementById('variant-title-input').value.trim();
+            const mode = dialog.dataset.mode;
+            const duration = mode === 'new'
+                ? document.getElementById('variant-duration-input').value.trim()
+                : getActiveVariant()?.duration;
+            if (!title || title.length > 120 || !duration || duration.length > 40) {
+                showLibraryStatus('Provide a variant title (up to 120 characters) and a valid duration label.', 'error');
+                return;
+            }
+            const variant = cloneActiveVariant(title, duration);
+            if (!variant) return;
+            dialog.close();
+            loadVariant(variant.id);
+            showLibraryStatus(mode === 'clone'
+                ? `Saved "${variant.title}" as a new variant.`
+                : `Added "${variant.title}" to Custom Variants.`, 'success');
+        }
+
+        function exportLibrary() {
+            const blob = new Blob([JSON.stringify({
+                schemaVersion: 1,
+                exportedAt: new Date().toISOString(),
+                variants: state.library
+            }, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'sentinel-variant-library.json';
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            showLibraryStatus(`Exported ${state.library.length} variants as JSON.`, 'success');
+        }
+
+        async function importLibrary(file) {
+            if (!file) return;
+            if (file.size > 2 * 1024 * 1024) {
+                showLibraryStatus('Import file exceeds the 2 MB size limit.', 'error');
+                return;
+            }
+            try {
+                const parsed = JSON.parse(await file.text());
+                const variants = normalizeVariants(parsed);
+                const previousLibrary = state.library;
+                const previousActiveId = state.activeVariantId;
+                state.library = variants;
+                if (!state.library.some(variant => variant.id === previousActiveId)) state.activeVariantId = variants[0].id;
+                if (!persistLibrary()) {
+                    state.library = previousLibrary;
+                    state.activeVariantId = previousActiveId;
+                    return;
+                }
+                loadVariant(state.activeVariantId);
+                showLibraryStatus(`Imported ${variants.length} variants.`, 'success');
+            } catch (error) {
+                showLibraryStatus(error instanceof SyntaxError
+                    ? 'Could not parse JSON. Select a valid exported variant library.'
+                    : error.message || 'Could not import variant library.', 'error');
+            }
+        }
+
+        function exportToPDF(mode = 'partner') {
+            if (!window.jspdf?.jsPDF) {
+                showLibraryStatus('PDF export library failed to load. Check the network and retry.', 'error');
+                return;
+            }
+            const variant = getActiveVariant();
+            if (!variant) {
+                showLibraryStatus('Select a variant before exporting a PDF.', 'error');
+                return;
+            }
+            const metrics = getVariantMetrics(variant);
+            const config = variant.config;
+            const volume = config.volume;
+            const stockCost = metrics.mop * config.stockSchemePct / 100;
+            const activationCost = metrics.mop * config.activationBonusPct / 100;
+            const pdfCurrency = value => `INR ${currencyFormatter.format(value)}`;
+            const doc = new window.jspdf.jsPDF({ unit: 'pt', format: 'a4' });
+            const pageWidth = doc.internal.pageSize.getWidth();
+            let y = 54;
+            const addLine = (label, value, bold = false) => {
+                const lines = doc.splitTextToSize(`${label}: ${value}`, pageWidth - 88);
+                if (y + lines.length * 16 > doc.internal.pageSize.getHeight() - 48) {
+                    doc.addPage();
+                    y = 48;
+                }
+                doc.setFont('helvetica', bold ? 'bold' : 'normal');
+                doc.text(lines, 44, y);
+                y += lines.length * 16 + 4;
+            };
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(16);
+            doc.text(mode === 'partner' ? 'Partner Scheme & Pricing' : 'Management Scheme Audit', 44, y);
+            y += 26;
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            addLine('Product', productNames[variant.product]);
+            addLine('Variant', variant.title);
+            addLine('Duration', variant.duration);
+            addLine('Tax mode', variant.taxMode === 'inclusive' ? 'Inclusive GST' : 'Exclusive GST');
+            addLine('MOP (pre-tax)', pdfCurrency(metrics.mop), true);
+            addLine('Stock scheme', `${config.stockSchemePct}%`);
+            addLine('Activation bonus', `${config.activationBonusPct}%`);
+            addLine('T1 billing price (pre-tax)', pdfCurrency(metrics.t1Price));
+            addLine('T2 billing price (pre-tax)', pdfCurrency(metrics.t2Price));
+            addLine('T3 MOP (pre-tax)', pdfCurrency(metrics.mop));
+            addLine('Scheme volume', `${currencyFormatter.format(volume)} keys`);
+            addLine('Billing total (incl. GST)', pdfCurrency(metrics.mop * volume * (1 + GST_RATE)));
+            if (mode === 'management') {
+                addLine('Stock scheme cost / key', pdfCurrency(stockCost));
+                addLine('Activation scheme cost / key', pdfCurrency(activationCost));
+                addLine('Base price entered', pdfCurrency(config.basePrice));
+                addLine('Key generation cost / key', pdfCurrency(config.keyGen));
+                addLine('Reserved partner margin / key', pdfCurrency(config.partnerMargin));
+                addLine('Box manufacturing & handling / key', pdfCurrency(config.boxMfg));
+                addLine('T1 margin / key', pdfCurrency(config.t1Margin));
+                addLine('T2 margin / key', pdfCurrency(config.t2Margin));
+                addLine('Production and tier cost / key', pdfCurrency(metrics.productionCost), true);
+                addLine('Reward key cost / key', pdfCurrency(config.rewardKeyCost));
+                addLine('Stock scheme cost total', pdfCurrency(stockCost * volume));
+                addLine('Reward key cost total', pdfCurrency(config.rewardKeyCost * volume));
+                addLine('Activation scheme cost total', pdfCurrency(activationCost * volume));
+                addLine('Net company margin / key', pdfCurrency(metrics.netCompanyMargin), true);
+                addLine('Final overall net profit / loss', pdfCurrency(metrics.netCompanyMargin * volume), true);
+            }
+            const filename = `${mode}-${variant.title}`.replace(/[^a-z0-9-]+/gi, '-').replace(/-+/g, '-').toLowerCase();
+            doc.save(`${filename}.pdf`);
+            showLibraryStatus(`${mode === 'partner' ? 'Partner' : 'Management'} PDF exported.`, 'success');
         }
 
         function handleLogout() {
@@ -552,19 +1054,16 @@
             window.location.href = 'index.html';
         }
 
-        function exportToPDF() {
-            document.getElementById('print-date').textContent = new Date().toLocaleString('en-IN');
-            window.print();
-        }
-
         document.querySelectorAll('[data-calc-input]').forEach(input => {
             input.addEventListener('input', () => {
-                saveActiveInput(input);
                 if (input.id === 'base-price') {
+                    const variant = getActiveVariant();
+                    if (variant) variant.mop = null;
                     state.mopFollowsBase = true;
                 } else if (input.id === 'mop') {
                     state.mopFollowsBase = false;
                 }
+                persistActiveInput(input);
                 calculate();
             });
         });
@@ -573,9 +1072,20 @@
             const handleSelect = () => {
                 if (select.id === 'tax-mode') {
                     state.mopFollowsBase = true;
+                    const variant = getActiveVariant();
+                    if (variant && variant.taxMode === select.value && variant.mop === null) {
+                        calculate();
+                        return;
+                    }
+                    if (variant) {
+                        variant.taxMode = select.value;
+                        variant.mop = null;
+                        persistLibrary();
+                    }
+                    renderVariantLibrary();
                     calculate();
                 } else if (select.id === 'duration') {
-                    selectDuration(select.value.match(/\d+/)[0]);
+                    selectDuration(select.value);
                 } else {
                     calculate();
                 }
@@ -586,11 +1096,40 @@
         document.querySelectorAll('[data-product]').forEach(button => {
             button.addEventListener('click', () => selectProduct(button.dataset.product));
         });
+        document.querySelectorAll('[data-tier-filter]').forEach(button => {
+            button.addEventListener('click', () => {
+                state.tierFilter = button.dataset.tierFilter;
+                applyTierFilter();
+            });
+        });
+        document.getElementById('toggle-library').addEventListener('click', event => {
+            const sidebar = document.getElementById('variant-sidebar');
+            const hidden = sidebar.classList.toggle('hidden');
+            event.currentTarget.setAttribute('aria-expanded', String(!hidden));
+        });
+        document.getElementById('add-variant').addEventListener('click', () => openVariantDialog('new'));
+        document.getElementById('save-variant').addEventListener('click', () => openVariantDialog('clone'));
+        document.getElementById('variant-form').addEventListener('submit', submitVariantForm);
+        document.getElementById('cancel-variant').addEventListener('click', () => {
+            document.getElementById('variant-dialog').close();
+        });
+        document.getElementById('export-library').addEventListener('click', exportLibrary);
+        document.getElementById('import-library-trigger').addEventListener('click', () => {
+            document.getElementById('import-library-file').click();
+        });
+        document.getElementById('import-library-file').addEventListener('change', event => {
+            importLibrary(event.currentTarget.files[0]);
+            event.currentTarget.value = '';
+        });
         document.getElementById('reset-calculator').addEventListener('click', resetCalculator);
-        loadActiveConfiguration();
+        state.library = loadLibrary();
+        state.activeVariantId = state.library.some(variant => variant.id === 'default-TS-1')
+            ? 'default-TS-1'
+            : state.library[0]?.id;
+        if (state.activeVariantId) loadVariant(state.activeVariantId);
+        else showLibraryStatus('The variant library is empty. Import a catalog or reset defaults.', 'error');
         document.getElementById('current-user-display').textContent =
             sessionStorage.getItem('sentinel_username') || 'Authenticated User';
-        calculate();
     </script>
 </body>
 </html>
