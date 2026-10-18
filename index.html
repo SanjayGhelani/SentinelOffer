@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sentinel Genesis - Scheme Calculator</title>
+    <title>Sentinel Genesis Offer - Scheme Calculator</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons -->
@@ -21,7 +21,7 @@
                     },
                     colors: {
                         cyber: {
-                            900: '#0b0f19',
+                            900: '#0b1329',
                             800: '#0f172a',
                             700: '#1e293b',
                             600: '#334155',
@@ -62,6 +62,35 @@
             background: #1e293b;
             border: 1px solid rgba(255, 255, 255, 0.05);
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .auth-screen {
+            background: #0b1329;
+        }
+
+        .auth-card {
+            width: min(100%, 590px);
+            background: linear-gradient(145deg, #131d32, #101828 74%);
+            border: 1px solid #344157;
+        }
+
+        .auth-tab.active {
+            color: #fff;
+            background: #202b3e;
+            border-color: #48566d;
+            box-shadow: 0 2px 7px rgba(0, 0, 0, .16);
+        }
+
+        .auth-panel[hidden],
+        #auth-screen[hidden],
+        #dashboard-screen[hidden] {
+            display: none !important;
+        }
+
+        @media print {
+            #auth-screen {
+                display: none !important;
+            }
         }
         
         /* Print Styles for Exporting Clean PDF */
@@ -104,7 +133,7 @@
         }
     </style>
 </head>
-<body class="bg-cyber-900 text-slate-100 font-sans min-h-screen antialiased flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+<body class="bg-[#0b1329] text-slate-100 font-sans min-h-screen antialiased flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
 
     <!-- TOP NOTIFICATION ALERT SYSTEM -->
     <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 no-print"></div>
@@ -112,80 +141,85 @@
     <!-- MAIN APP CONTAINER -->
     <div id="app" class="flex-grow flex flex-col">
 
-        <!-- ========================================== -->
-        <!-- 1. AUTHENTICATION / LOGIN SCREEN          -->
-        <!-- ========================================== -->
-        <section id="login-screen" class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[#070d23]">
-            <div class="w-full max-w-[560px] rounded-3xl p-5 sm:p-8 relative z-10 border border-slate-700 bg-[#111b30] shadow-2xl shadow-black/30">
-                
-                <!-- BRANDING HEADER -->
-                <div class="text-center mb-7">
-                    <div class="w-full max-w-[420px] h-[132px] sm:h-[150px] mx-auto mb-5 rounded-2xl bg-white border border-white/80 shadow-lg shadow-black/20 flex items-center justify-center p-3">
-                        <img src="images/logo.png" alt="Sentinel Genesis Technologies Pvt Ltd logo" class="h-full w-full object-contain"
-                             onerror="this.onerror=null; this.outerHTML='<div class=\'flex h-full w-full items-center justify-center gap-3 text-slate-800 font-bold text-xl px-2\'><i class=\'fa-solid fa-shield-halved text-3xl text-emerald-500\'></i><span>SENTINEL GENESIS</span></div>'">
+        <section id="auth-screen" class="auth-screen min-h-screen flex items-center justify-center p-4">
+            <div class="auth-card w-full rounded-3xl p-5 sm:p-8 shadow-2xl shadow-black/30">
+                <header class="text-center mb-7">
+                    <div class="w-full max-w-[375px] h-[130px] mx-auto mb-6 rounded-xl bg-white border border-slate-200 flex items-center justify-center p-3">
+                        <img src="images/logo.png" alt="Sentinel Genesis Technologies Pvt Ltd" class="max-h-full max-w-full object-contain">
                     </div>
-                    <h1 class="max-w-full whitespace-nowrap text-[clamp(0.72rem,3vw,1rem)] font-bold uppercase text-sky-400">Sentinel Genesis Technologies</h1>
-                    <p class="text-xs text-slate-400 mt-2 font-medium">Product Scheme Calculator</p>
-                </div>
+                    <p class="text-xs sm:text-sm font-extrabold uppercase tracking-[0.16em] text-sky-400 mb-2">SENTINEL GENESIS TECHNOLOGIES</p>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Scheme Calculator &amp; Partner Offer Hub</h1>
+                    <p class="text-sm text-slate-400 mt-3">Sign in to access confidential scheme calculation and engineering workspace.</p>
+                </header>
 
-                <!-- FOUNDER INFORMATION BADGE -->
-                <div class="flex items-center gap-3 p-3 mb-6 rounded-xl bg-slate-800/60 border border-slate-700/60">
-                    <div class="relative w-12 h-12 rounded-full overflow-hidden bg-slate-700 border-2 border-indigo-500/50 flex-shrink-0">
-                            <img src="images/founder.png" alt="Sanjay Ghelani" class="w-full h-full object-cover"
-                                onerror="if(!this.dataset.fallback){this.dataset.fallback='true';this.src='images/director.png';}else{this.onerror=null;this.outerHTML='<div class=\'w-full h-full flex items-center justify-center bg-indigo-900 text-indigo-200 font-bold text-lg\'><i class=\'fa-solid fa-user\'></i></div>';}">
-                    </div>
-                    <div>
-                        <span class="text-[10px] uppercase font-bold tracking-widest text-indigo-400 block">Leadership</span>
-                        <h2 class="text-sm font-semibold text-slate-100">Sanjay Ghelani</h2>
-                        <p class="text-xs text-slate-400">Founder & Managing Director</p>
-                    </div>
-                </div>
+                <p id="auth-alert" class="hidden rounded-lg border px-3 py-2 mb-5 text-sm" role="alert" aria-live="polite"></p>
+                <nav class="grid grid-cols-3 gap-1 p-1 mb-6 rounded-xl border border-slate-700 bg-slate-950/50" aria-label="Authentication">
+                    <button type="button" class="auth-tab active rounded-lg border border-transparent px-2 py-3 text-xs sm:text-sm font-bold text-slate-300 transition" data-auth-tab="sign-in" aria-pressed="true">Sign In</button>
+                    <button type="button" class="auth-tab rounded-lg border border-transparent px-2 py-3 text-xs sm:text-sm font-bold text-slate-300 transition" data-auth-tab="add-user" aria-pressed="false">+ Add User</button>
+                    <button type="button" class="auth-tab rounded-lg border border-transparent px-2 py-3 text-xs sm:text-sm font-bold text-slate-300 transition" data-auth-tab="reset-users" aria-pressed="false">Reset Users</button>
+                </nav>
 
-                <!-- LOGIN FORM -->
-                <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
-                    <p id="login-error" class="hidden rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300" role="alert" aria-live="polite"></p>
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1">Username</label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                                <i class="fa-solid fa-user"></i>
-                            </span>
-                            <input type="text" id="username" required placeholder="Enter username" 
-                                   class="w-full bg-slate-900/90 text-slate-100 text-sm rounded-xl pl-10 pr-4 py-3 border border-slate-700 focus:outline-none focus:border-indigo-500 transition-colors">
+                <section class="auth-panel" data-auth-panel="sign-in">
+                    <form id="sign-in-form" class="space-y-4">
+                        <div>
+                            <label for="auth-username" class="block text-xs font-bold text-slate-200 mb-2">Username / Auditor ID</label>
+                            <input id="auth-username" name="username" type="text" required autocomplete="username"
+                                   class="w-full rounded-lg border border-slate-600 bg-slate-100 px-3 py-3 text-slate-950 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter username">
                         </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1">Password</label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                                <i class="fa-solid fa-lock"></i>
-                            </span>
-                            <input type="password" id="password" required placeholder="Enter password" 
-                                   class="w-full bg-slate-900/90 text-slate-100 text-sm rounded-xl pl-10 pr-10 py-3 border border-slate-700 focus:outline-none focus:border-indigo-500 transition-colors">
-                            <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white">
-                                <i id="pwd-toggle-icon" class="fa-solid fa-eye"></i>
-                            </button>
+                        <div>
+                            <label for="auth-password" class="block text-xs font-bold text-slate-200 mb-2">Access Password</label>
+                            <input id="auth-password" name="password" type="password" required autocomplete="current-password"
+                                   class="w-full rounded-lg border border-slate-600 bg-slate-100 px-3 py-3 text-slate-950 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter access password">
                         </div>
+                        <button type="submit" class="w-full rounded-lg border border-sky-400 bg-gradient-to-r from-blue-600 to-sky-600 px-4 py-4 font-bold text-white transition hover:brightness-110">Sign In Securely</button>
+                    </form>
+                </section>
+
+                <section class="auth-panel" data-auth-panel="add-user" hidden>
+                    <form id="add-user-form" class="space-y-4">
+                        <div>
+                            <label for="new-username" class="block text-xs font-bold text-slate-200 mb-2">New username</label>
+                            <input id="new-username" name="username" type="text" required minlength="3" maxlength="40" autocomplete="off"
+                                   class="w-full rounded-lg border border-slate-600 bg-slate-100 px-3 py-3 text-slate-950 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Choose a username">
+                        </div>
+                        <div>
+                            <label for="new-password" class="block text-xs font-bold text-slate-200 mb-2">New password</label>
+                            <input id="new-password" name="password" type="password" required minlength="10" autocomplete="new-password"
+                                   class="w-full rounded-lg border border-slate-600 bg-slate-100 px-3 py-3 text-slate-950 outline-none focus:ring-2 focus:ring-blue-500" placeholder="At least 10 characters">
+                        </div>
+                        <div>
+                            <label for="add-master-passcode" class="block text-xs font-bold text-slate-200 mb-2">Master authorization passcode</label>
+                            <input id="add-master-passcode" name="masterPasscode" type="password" required autocomplete="current-password"
+                                   class="w-full rounded-lg border border-slate-600 bg-slate-100 px-3 py-3 text-slate-950 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter master passcode">
+                        </div>
+                        <button type="submit" class="w-full rounded-lg border border-sky-400 bg-gradient-to-r from-blue-600 to-sky-600 px-4 py-4 font-bold text-white transition hover:brightness-110">Create User</button>
+                    </form>
+                </section>
+
+                <section class="auth-panel" data-auth-panel="reset-users" hidden>
+                    <div class="rounded-lg border border-red-500/50 bg-red-950/20 p-4 mb-5">
+                        <h2 class="font-bold text-red-200 mb-2">Reset User Registry</h2>
+                        <p class="text-sm text-amber-200">This restores the three default accounts and permanently removes users added in this browser.</p>
                     </div>
+                    <form id="reset-users-form" class="space-y-4">
+                        <div>
+                            <label for="reset-master-passcode" class="block text-xs font-bold text-slate-200 mb-2">Master authorization passcode</label>
+                            <input id="reset-master-passcode" name="masterPasscode" type="password" required autocomplete="current-password"
+                                   class="w-full rounded-lg border border-slate-600 bg-slate-100 px-3 py-3 text-slate-950 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter master passcode">
+                        </div>
+                        <button type="submit" class="w-full rounded-lg border border-red-500 bg-red-800 px-4 py-4 font-bold text-white transition hover:bg-red-700">Reset Users</button>
+                    </form>
+                </section>
 
-                    <button type="submit" id="login-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-indigo-600/30 transition-all duration-200 flex items-center justify-center gap-2">
-                        <span>Sign In to Dashboard</span>
-                        <i class="fa-solid fa-arrow-right text-xs"></i>
-                    </button>
-                </form>
-
-                <div class="mt-6 text-center border-t border-slate-800 pt-4">
-                    <p class="text-[11px] text-slate-500">Restricted Access &bull; Authorized Personnel Only</p>
-                </div>
+                <p class="mt-6 border-t border-slate-700 pt-4 text-center text-[11px] text-slate-400">Browser-local access only &bull; Do not use to protect confidential information</p>
+                <p class="mt-2 text-center text-[10px] leading-relaxed text-slate-500">Static-site authentication is not secure. Credentials and the master passcode are visible to visitors and can be changed or bypassed in browser tools. User changes are saved only in this browser.</p>
             </div>
         </section>
 
-
         <!-- ========================================== -->
-        <!-- 2. MAIN DASHBOARD & CALCULATOR INTERFACE  -->
+        <!-- MAIN DASHBOARD & CALCULATOR INTERFACE     -->
         <!-- ========================================== -->
-        <div id="dashboard-screen" class="hidden flex-col min-h-screen">
+        <div id="dashboard-screen" class="hidden flex-col min-h-screen" hidden>
             
             <!-- NAVBAR -->
             <header class="bg-cyber-800/90 border-b border-slate-800 sticky top-0 z-40 backdrop-blur-md no-print">
@@ -208,9 +242,9 @@
                             <span>Export PDF</span>
                         </button>
 
-                        <button onclick="handleLogout()" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-semibold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-right-from-bracket"></i>
-                            <span class="hidden sm:inline">Logout</span>
+                        <button type="button" onclick="handleLogout()" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-semibold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-right-from-bracket"></i>
+                                <span class="hidden sm:inline">Logout</span>
                         </button>
                     </div>
                 </div>
@@ -511,16 +545,18 @@
     <!-- JAVASCRIPT REVENUE & STATE LOGIC           -->
     <!-- ========================================== -->
     <script>
-        // --- 1. USER ACCOUNTS (PRE-CONFIGURED) ---
-        const USERS = {
-            "Admin": "Admin@123#",
-            "Sanjay": "Sanpal@1111#",
-            "Pratyush": "Pratyush@123#"
-        };
+        // Static-host authentication is a browser convenience, not a security boundary.
+        const USERS_STORAGE_KEY = 'sentinel_offer_users';
+        const DEFAULT_USERS = [
+            { username: 'Admin', password: 'Admin@123#' },
+            { username: 'Sanjay', password: 'Sanpal@1111#' },
+            { username: 'Pratyush', password: 'Pratyush@123#' }
+        ];
+        const MASTER_PASSCODE = 'cat123123';
+        let users = [];
 
-        // --- 2. GLOBAL REACTIVE STATE ---
+        // --- 1. GLOBAL REACTIVE STATE ---
         let appState = {
-            currentUser: null,
             selectedProduct: 'TS', // Default product
             products: {
                 AV: { name: 'Antivirus (AV)', basePrice: 300 },
@@ -548,78 +584,197 @@
             ]
         };
 
-        // --- 3. INITIALIZATION & SESSION MANAGEMENT ---
+        // --- 2. INITIALIZATION AND BROWSER-LOCAL AUTHENTICATION ---
         window.onload = function() {
-            const savedUser = sessionStorage.getItem('sentinel_user');
-            if (savedUser && Object.prototype.hasOwnProperty.call(USERS, savedUser)) {
-                appState.currentUser = savedUser;
-                showDashboard();
-            } else {
-                sessionStorage.removeItem('sentinel_user');
-                showLogin();
-            }
+            initializeAuth();
         };
 
-        function showLogin() {
-            document.getElementById('login-screen').classList.remove('hidden');
-            document.getElementById('dashboard-screen').classList.add('hidden');
-            document.getElementById('dashboard-screen').classList.remove('flex');
+        function initializeAuth() {
+            try {
+                const savedUsers = localStorage.getItem(USERS_STORAGE_KEY);
+                if (savedUsers === null) {
+                    users = DEFAULT_USERS.map(user => ({ ...user }));
+                    saveUsers();
+                } else {
+                    const parsedUsers = JSON.parse(savedUsers);
+                    if (!Array.isArray(parsedUsers) || parsedUsers.some(user =>
+                        !user || typeof user.username !== 'string' || typeof user.password !== 'string'
+                    )) {
+                        throw new Error('Saved user data is invalid. Reset browser storage to restore defaults.');
+                    }
+                    users = parsedUsers;
+                }
+
+                const savedUsername = sessionStorage.getItem('sentinel_offer_current_user');
+                if (savedUsername && users.some(user => user.username === savedUsername)) {
+                    showDashboard(savedUsername);
+                } else {
+                    sessionStorage.removeItem('sentinel_offer_current_user');
+                    showLogin();
+                }
+            } catch (error) {
+                showLogin();
+                setAuthAlert(error.message || 'Browser storage is unavailable. Enable local storage and reload.', 'error');
+            }
+
+            document.querySelectorAll('[data-auth-tab]').forEach(button => {
+                button.addEventListener('click', () => switchAuthTab(button.dataset.authTab));
+            });
+            document.getElementById('sign-in-form').addEventListener('submit', handleLogin);
+            document.getElementById('add-user-form').addEventListener('submit', handleAddUser);
+            document.getElementById('reset-users-form').addEventListener('submit', handleResetUsers);
         }
 
-        function showDashboard() {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('dashboard-screen').classList.remove('hidden');
-            document.getElementById('dashboard-screen').classList.add('flex');
-            document.getElementById('current-user-display').innerText = appState.currentUser;
-            
-            // Render baseline controls and calculations
+        function saveUsers() {
+            localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+        }
+
+        function setAuthAlert(message, type) {
+            const alert = document.getElementById('auth-alert');
+            alert.textContent = message;
+            alert.className = `rounded-lg border px-3 py-2 mb-5 text-sm ${
+                type === 'success'
+                    ? 'border-emerald-500/40 bg-emerald-950/40 text-emerald-200'
+                    : 'border-red-500/40 bg-red-950/40 text-red-200'
+            }`;
+            alert.classList.remove('hidden');
+        }
+
+        function clearAuthAlert() {
+            const alert = document.getElementById('auth-alert');
+            alert.textContent = '';
+            alert.classList.add('hidden');
+        }
+
+        function switchAuthTab(tab) {
+            clearAuthAlert();
+            document.querySelectorAll('[data-auth-tab]').forEach(button => {
+                const active = button.dataset.authTab === tab;
+                button.classList.toggle('active', active);
+                button.setAttribute('aria-pressed', String(active));
+            });
+            document.querySelectorAll('[data-auth-panel]').forEach(panel => {
+                panel.hidden = panel.dataset.authPanel !== tab;
+            });
+        }
+
+        function showLogin() {
+            document.getElementById('auth-screen').hidden = false;
+            const dashboard = document.getElementById('dashboard-screen');
+            dashboard.hidden = true;
+            dashboard.classList.add('hidden');
+            dashboard.classList.remove('flex');
+        }
+
+        function showDashboard(username) {
+            document.getElementById('auth-screen').hidden = true;
+            const dashboard = document.getElementById('dashboard-screen');
+            dashboard.hidden = false;
+            dashboard.classList.remove('hidden');
+            dashboard.classList.add('flex');
+            document.getElementById('current-user-display').textContent = username;
             renderProductTabs();
             syncTierInputs();
             renderTable();
             recalculateAnalytics();
         }
 
-        // --- 4. AUTHENTICATION HANDLERS ---
-        function handleLogin(e) {
-            e.preventDefault();
-            const u = document.getElementById('username').value.trim();
-            const p = document.getElementById('password').value;
-            const error = document.getElementById('login-error');
-
-            if (USERS[u] && USERS[u] === p) {
-                error.textContent = '';
-                error.classList.add('hidden');
-                appState.currentUser = u;
-                sessionStorage.setItem('sentinel_user', u);
-                showToast(`Welcome back, ${u}!`, 'success');
-                showDashboard();
-            } else {
-                error.textContent = 'The username or password is incorrect. Please try again.';
-                error.classList.remove('hidden');
-                showToast('Invalid Username or Password!', 'error');
+        function handleLogin(event) {
+            event.preventDefault();
+            const form = new FormData(event.currentTarget);
+            const username = String(form.get('username') || '').trim();
+            const password = String(form.get('password') || '');
+            const matchedUser = users.find(user => user.username === username && user.password === password);
+            if (!matchedUser) {
+                setAuthAlert('The username or password is incorrect. Please try again.', 'error');
+                return;
             }
+
+            try {
+                sessionStorage.setItem('sentinel_offer_current_user', matchedUser.username);
+            } catch (error) {
+                setAuthAlert('Browser session storage is unavailable. Enable it and try again.', 'error');
+                return;
+            }
+            event.currentTarget.reset();
+            clearAuthAlert();
+            showDashboard(matchedUser.username);
+        }
+
+        function handleAddUser(event) {
+            event.preventDefault();
+            const form = new FormData(event.currentTarget);
+            const username = String(form.get('username') || '').trim();
+            const password = String(form.get('password') || '');
+            const masterPasscode = String(form.get('masterPasscode') || '');
+
+            if (masterPasscode !== MASTER_PASSCODE) {
+                setAuthAlert('Master authorization failed.', 'error');
+                return;
+            }
+            if (!/^[A-Za-z0-9._-]{3,40}$/.test(username)) {
+                setAuthAlert('Use 3–40 letters, numbers, dots, underscores, or hyphens for the username.', 'error');
+                return;
+            }
+            if (password.length < 10) {
+                setAuthAlert('The password must contain at least 10 characters.', 'error');
+                return;
+            }
+            if (users.some(user => user.username.toLowerCase() === username.toLowerCase())) {
+                setAuthAlert('That username is already in use.', 'error');
+                return;
+            }
+
+            users.push({ username, password });
+            try {
+                saveUsers();
+            } catch (error) {
+                users.pop();
+                setAuthAlert('Could not save the new user in this browser. Check available storage.', 'error');
+                return;
+            }
+
+            event.currentTarget.reset();
+            setAuthAlert(`User "${username}" was added in this browser.`, 'success');
+        }
+
+        function handleResetUsers(event) {
+            event.preventDefault();
+            const form = new FormData(event.currentTarget);
+            if (String(form.get('masterPasscode') || '') !== MASTER_PASSCODE) {
+                setAuthAlert('Master authorization failed.', 'error');
+                return;
+            }
+            if (!window.confirm('Reset all users to the three default accounts? Added accounts will be permanently removed from this browser.')) {
+                return;
+            }
+
+            const previousUsers = users;
+            users = DEFAULT_USERS.map(user => ({ ...user }));
+            try {
+                saveUsers();
+                sessionStorage.removeItem('sentinel_offer_current_user');
+            } catch (error) {
+                users = previousUsers;
+                setAuthAlert('Could not reset browser storage. Please try again.', 'error');
+                return;
+            }
+
+            event.currentTarget.reset();
+            showLogin();
+            switchAuthTab('sign-in');
+            setAuthAlert('Users have been reset to the three default accounts.', 'success');
         }
 
         function handleLogout() {
-            sessionStorage.removeItem('sentinel_user');
-            appState.currentUser = null;
-            showToast('Logged out successfully.', 'info');
+            sessionStorage.removeItem('sentinel_offer_current_user');
+            document.getElementById('sign-in-form').reset();
             showLogin();
+            switchAuthTab('sign-in');
+            showToast('Logged out.', 'info');
         }
 
-        function togglePasswordVisibility() {
-            const pwdInput = document.getElementById('password');
-            const icon = document.getElementById('pwd-toggle-icon');
-            if (pwdInput.type === 'password') {
-                pwdInput.type = 'text';
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
-            } else {
-                pwdInput.type = 'password';
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
-            }
-        }
-
-        // --- 5. PRODUCT & BASELINE CONTROLS ---
+        // --- 3. PRODUCT & BASELINE CONTROLS ---
         function selectProduct(prodCode) {
             appState.selectedProduct = prodCode;
             renderProductTabs();
@@ -883,7 +1038,10 @@
                 { id: 7, boxQty: 30, keysPerBox: 300, stockOfferPercent: 33, rewardFreeKeys: 60, reward2: 30000 }
             ];
 
-            showDashboard();
+            renderProductTabs();
+            syncTierInputs();
+            renderTable();
+            recalculateAnalytics();
             showToast('Reset to default values.', 'info');
         }
 
@@ -912,7 +1070,11 @@
             }
 
             toast.className = `flex items-center gap-2.5 px-4 py-3 rounded-xl border text-xs font-medium shadow-xl transition-all duration-300 transform translate-y-2 ${bgClass}`;
-            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+            const iconElement = document.createElement('i');
+            iconElement.className = `fa-solid ${icon}`;
+            const messageElement = document.createElement('span');
+            messageElement.textContent = message;
+            toast.append(iconElement, messageElement);
 
             container.appendChild(toast);
 
