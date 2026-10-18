@@ -3,27 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
     <title>Sentinel Genesis - Scheme Calculator</title>
     <script>
         if (sessionStorage.getItem("sentinel_auth") !== "true") {
             window.location.href = "index.html";
         }
     </script>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Font: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
                         cyber: {
                             900: '#0b1329',
@@ -37,767 +32,487 @@
                     }
                 }
             }
-        }
+        };
     </script>
-
     <style>
-        /* Custom Scrollbar for Sleek Dark Theme */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0f172a;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #6366f1;
-        }
-
-        /* Glassmorphism Subtle Glow Effects */
-        .cyber-glass {
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6366f1; }
         .cyber-card {
             background: #1e293b;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
         }
-
-        /* Print Styles for Exporting Clean PDF */
+        .sheet-table { border-collapse: separate; border-spacing: 0; }
+        .sheet-table th, .sheet-table td { padding: 0.4rem 0.55rem; }
+        .sheet-table tbody tr + tr td { border-top: 1px solid rgb(51 65 85 / 0.55); }
+        .sheet-scroll { contain: layout paint; }
+        .sheet-input {
+            width: 100%;
+            min-width: 6.5rem;
+            border: 1px solid #334155;
+            border-radius: 0.375rem;
+            background: #0f172a;
+            padding: 0.35rem 0.5rem;
+            color: #fcd34d;
+            font-weight: 600;
+        }
+        .sheet-input:focus {
+            outline: 1px solid #3b82f6;
+            border-color: #3b82f6;
+        }
         @media print {
-            body {
-                background: #ffffff !important;
-                color: #000000 !important;
-            }
-            .no-print {
-                display: none !important;
-            }
-            .print-only {
-                display: block !important;
-            }
-            .cyber-card, .cyber-glass {
-                background: #ffffff !important;
-                color: #000000 !important;
-                border: 1px solid #ccc !important;
-                box-shadow: none !important;
-            }
-            input, select {
-                border: none !important;
-                background: transparent !important;
-                color: #000000 !important;
-                appearance: none;
-            }
-            table {
-                width: 100% !important;
-                border-collapse: collapse !important;
-            }
-            th, td {
-                border: 1px solid #ddd !important;
-                padding: 6px !important;
-                color: #000 !important;
-                font-size: 10px !important;
-            }
-            .gradient-divider {
-                border-top: 2px solid #333 !important;
-            }
+            body { background: #fff !important; color: #111827 !important; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            .cyber-card { background: #fff !important; color: #111827 !important; border: 1px solid #cbd5e1 !important; box-shadow: none !important; }
+            .sheet-input, select { color: #111827 !important; background: #fff !important; border: 0 !important; padding: 0 !important; }
+            table { width: 100% !important; border-collapse: collapse !important; }
+            th, td { color: #111827 !important; border: 1px solid #cbd5e1 !important; }
+            .profit-state { box-shadow: none !important; }
         }
     </style>
 </head>
-<body class="bg-[#0b1329] text-slate-100 font-sans min-h-screen antialiased flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
-
-    <!-- TOP NOTIFICATION ALERT SYSTEM -->
-    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 no-print"></div>
-
-    <!-- MAIN APP CONTAINER -->
-    <div id="app" class="flex-grow flex flex-col">
-
-        <!-- ========================================== -->
-        <!-- MAIN DASHBOARD & CALCULATOR INTERFACE     -->
-        <!-- ========================================== -->
-        <div id="dashboard-screen" class="flex flex-col min-h-screen">
-            
-            <!-- NAVBAR -->
-            <header class="bg-cyber-800/90 border-b border-slate-800 sticky top-0 z-40 backdrop-blur-md no-print">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <img src="images/logo.png" alt="Logo" class="h-28 w-auto object-contain"
+<body class="min-h-screen bg-[#0b1329] font-sans text-slate-100 antialiased selection:bg-indigo-500 selection:text-white">
+    <div id="app" class="flex min-h-screen flex-col">
+        <header class="sticky top-0 z-40 border-b border-slate-800 bg-cyber-800/90 backdrop-blur-md no-print">
+            <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-4 sm:px-6 lg:px-8">
+                <div class="flex min-w-0 flex-wrap items-center gap-4">
+                    <div class="flex h-24 shrink-0 items-center justify-center rounded-xl bg-white p-2">
+                        <img src="images/logo.png" alt="Sentinel Genesis Technologies" class="max-h-20 w-auto object-contain"
                              onerror="this.onerror=null; this.outerHTML='<i class=\'fa-solid fa-shield-halved text-indigo-400 text-2xl\'></i>'">
-                        <span class="font-bold tracking-tight text-white hidden sm:inline text-lg">Sentinel Genesis - Scheme Calculator</span>
-                        <span class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full">Scheme Portal</span>
                     </div>
-
-                    <div class="flex items-center gap-4">
-                        <div class="flex items-center gap-2 text-xs bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-700/80">
-                            <i class="fa-solid fa-user-circle text-indigo-400"></i>
-                            <span class="text-slate-300 font-medium" id="current-user-display">User</span>
-                        </div>
-                        
-                        <button onclick="exportToPDF()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-600 transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-file-pdf text-red-400"></i>
-                            <span>Export PDF</span>
-                        </button>
-
-                        <button type="button" onclick="handleLogout()" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-semibold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
-                                <i class="fa-solid fa-right-from-bracket"></i>
-                                <span class="hidden sm:inline">Logout</span>
-                        </button>
+                    <div class="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
+                        <span class="hidden text-base font-bold tracking-tight text-white md:inline xl:text-xl">Sentinel Genesis - Scheme Calculator</span>
+                        <span class="w-fit rounded-full border border-indigo-700/50 bg-indigo-950/60 px-3 py-1 text-xs font-semibold uppercase text-indigo-300">Scheme Portal</span>
                     </div>
                 </div>
-            </header>
-
-            <!-- DASHBOARD CONTENT AREA -->
-            <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-
-                <!-- PRINT WATERMARK HEADER -->
-                <div class="hidden print-only mb-6 border-b pb-4">
-                    <h1 class="text-2xl font-bold text-black">Sentinel Genesis Technologies Pvt Ltd</h1>
-                    <p class="text-sm text-gray-600">Official Product Scheme & Tier Pricing Calculation Sheet</p>
-                    <p class="text-xs text-gray-500 mt-1">Generated on: <span id="print-date"></span></p>
-                </div>
-
-                <!-- SECTION 3 REQUIREMENT: MAIN HEADER & DESCRIPTION WITH GRADIENT DIVIDER -->
-                <div class="space-y-2">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                        <div>
-                            <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-                                <i class="fa-solid fa-calculator text-indigo-500 no-print"></i>
-                                Scheme Calculator
-                            </h1>
-                            <p class="text-sm text-slate-400 mt-1">
-                                Interactive Partner Scheme, Margin &amp; Reward Modeling Platform
-                            </p>
-                        </div>
-
-                        <div class="flex items-center gap-2 no-print">
-                            <button onclick="resetToDefaults()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-lg border border-slate-700 transition flex items-center gap-1">
-                                <i class="fa-solid fa-rotate-left"></i>
-                                <span>Reset Defaults</span>
-                            </button>
-                        </div>
+                <div class="flex shrink-0 flex-wrap items-center justify-end gap-2 sm:gap-3">
+                    <div class="flex items-center gap-2 rounded-full border border-slate-700/80 bg-slate-900/80 px-3 py-2 text-xs">
+                        <i class="fa-solid fa-user-circle text-indigo-400"></i>
+                        <span id="current-user-display" class="font-medium text-slate-300">User</span>
                     </div>
-
-                    <!-- VISUAL DIVIDER LINE (GRADIENT GLOW EFFECT) -->
-                    <div class="gradient-divider h-0.5 w-full bg-gradient-to-r from-indigo-500 via-cyan-500 to-emerald-500 rounded-full opacity-80 my-4"></div>
+                    <button type="button" onclick="exportToPDF()" class="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-slate-700">
+                        <i class="fa-solid fa-file-pdf text-red-400"></i>
+                        <span class="hidden sm:inline">Export PDF</span>
+                    </button>
+                    <button type="button" onclick="handleLogout()" class="flex items-center gap-2 rounded-lg border border-red-900/60 px-3 py-2 text-xs font-semibold text-red-400 transition hover:bg-red-950/40">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span class="hidden sm:inline">Logout</span>
+                    </button>
                 </div>
+            </div>
+        </header>
 
-                <!-- PRODUCT SELECTION & BASELINE CONTROLS -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    
-                    <!-- PRODUCT TOGGLES CARD -->
-                    <div class="cyber-card p-5 rounded-2xl lg:col-span-2">
-                        <div class="flex items-center justify-between mb-4">
-                            <h2 class="text-sm font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-2">
-                                <i class="fa-solid fa-box-archive"></i>
-                                1. Select Product & Base Price
-                            </h2>
-                            <span class="text-xs text-slate-400">GST: 18% Standard</span>
-                        </div>
+        <main class="mx-auto w-full max-w-7xl flex-1 space-y-3 px-3 py-4 sm:px-5 lg:px-8">
+            <div class="print-only mb-3 hidden border-b border-slate-300 pb-2">
+                <h1 class="text-xl font-bold text-black">Sentinel Genesis Scheme Calculator</h1>
+                <p class="text-xs text-slate-600">Generated <span id="print-date"></span></p>
+            </div>
 
-                        <!-- PRODUCT RADIO TAB BUTTONS -->
-                        <div class="grid grid-cols-3 gap-3 mb-5 no-print">
-                            <button type="button" onclick="selectProduct('AV')" id="tab-AV" class="p-3 rounded-xl border text-center transition flex flex-col items-center gap-1">
-                                <i class="fa-solid fa-shield-virus text-lg"></i>
-                                <span class="font-bold text-sm">Antivirus (AV)</span>
-                                <span class="text-xs opacity-75" id="tab-price-AV">₹300</span>
-                            </button>
-                            <button type="button" onclick="selectProduct('IS')" id="tab-IS" class="p-3 rounded-xl border text-center transition flex flex-col items-center gap-1">
-                                <i class="fa-solid fa-network-wired text-lg"></i>
-                                <span class="font-bold text-sm">Internet Security (IS)</span>
-                                <span class="text-xs opacity-75" id="tab-price-IS">₹400</span>
-                            </button>
-                            <button type="button" onclick="selectProduct('TS')" id="tab-TS" class="p-3 rounded-xl border text-center transition flex flex-col items-center gap-1">
-                                <i class="fa-solid fa-user-shield text-lg"></i>
-                                <span class="font-bold text-sm">Total Security (TS)</span>
-                                <span class="text-xs opacity-75" id="tab-price-TS">₹500</span>
-                            </button>
-                        </div>
+            <section class="flex flex-wrap items-end justify-between gap-2">
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-white">Scheme Calculator</h1>
+                    <p class="text-xs text-slate-400">Spreadsheet-style per-key scheme and profitability model</p>
+                </div>
+                <button id="reset-calculator" type="button" class="no-print rounded-md border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-700">
+                    <i class="fa-solid fa-rotate-left mr-1"></i>Reset Calculator
+                </button>
+            </section>
 
-                        <!-- EDITABLE BASELINE INPUTS -->
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
-                            <div>
-                                <label class="block text-xs text-slate-400 mb-1 font-medium">Base Price / Key (₹)</label>
-                                <input type="number" id="input-base-price" oninput="updateBasePrice(this.value)" class="w-full bg-slate-800 text-white font-bold text-base px-3 py-2 rounded-lg border border-slate-700 focus:outline-none focus:border-indigo-500">
-                            </div>
+            <nav class="flex flex-wrap gap-1 rounded-lg border border-slate-800 bg-slate-900/70 p-1 no-print" aria-label="Product selection">
+                <button type="button" data-product="AV" aria-pressed="false" class="product-tab rounded-md border border-transparent px-3 py-1.5 text-xs font-semibold text-slate-400 transition">Antivirus (AV)</button>
+                <button type="button" data-product="IS" aria-pressed="false" class="product-tab rounded-md border border-transparent px-3 py-1.5 text-xs font-semibold text-slate-400 transition">Internet Security (IS)</button>
+                <button type="button" data-product="TS" aria-pressed="true" class="product-tab rounded-md border border-indigo-500 bg-indigo-900/40 px-3 py-1.5 text-xs font-semibold text-white transition">Total Security (TS)</button>
+            </nav>
 
-                            <div>
-                                <label class="block text-xs text-slate-400 mb-1 font-medium">Key Validity / Type</label>
-                                <input type="text" id="input-key-duration" value="1 Year / 1 PC" onchange="updateKeyDuration(this.value)" class="w-full bg-slate-800 text-white text-sm px-3 py-2 rounded-lg border border-slate-700 focus:outline-none focus:border-indigo-500">
-                            </div>
-
-                            <div>
-                                <label class="block text-xs text-slate-400 mb-1 font-medium">Tax Rate (GST %)</label>
-                                <input type="number" id="input-tax-rate" value="18" oninput="updateTaxRate(this.value)" class="w-full bg-slate-800 text-white text-sm px-3 py-2 rounded-lg border border-slate-700 focus:outline-none focus:border-indigo-500">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- PRODUCTION COST & EXPENSE INPUT CARD -->
-                    <div class="cyber-card p-5 rounded-2xl">
-                        <h2 class="text-sm font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-2 mb-4">
-                            <i class="fa-solid fa-industry"></i>
-                            Company Production Cost
-                        </h2>
-
-                        <div class="space-y-3">
-                            <div>
-                                <label class="block text-xs text-slate-400 mb-1">Key Production Cost (₹/key)</label>
-                                <input type="number" id="input-prod-cost" value="120" oninput="updateProdCost(this.value)" class="w-full bg-slate-900 text-slate-100 font-semibold text-sm px-3 py-2 rounded-lg border border-slate-700 focus:outline-none focus:border-cyan-500">
-                                <p class="text-[10px] text-slate-500 mt-1">Basic software manufacturing & key gen expense</p>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs text-slate-400 mb-1">Box Making & Handling (₹/key)</label>
-                                <input type="number" id="input-handling-cost" value="5" oninput="updateHandlingCost(this.value)" class="w-full bg-slate-900 text-slate-100 font-semibold text-sm px-3 py-2 rounded-lg border border-slate-700 focus:outline-none focus:border-cyan-500">
-                                <p class="text-[10px] text-slate-500 mt-1">Packaging, physical box & handling charges</p>
-                            </div>
-
-                            <div class="pt-2 border-t border-slate-800 flex justify-between items-center text-xs">
-                                <span class="text-slate-400 font-medium">Total Base Expense:</span>
-                                <span class="text-cyan-400 font-bold text-sm" id="display-total-base-cost">₹125.00 / key</span>
-                            </div>
-                        </div>
+            <section class="cyber-card overflow-hidden rounded-xl">
+                <div class="border-b border-slate-700 px-3 py-2">
+                    <h2 class="text-xs font-bold uppercase tracking-wide text-indigo-300">Product Configuration</h2>
+                </div>
+                <div class="grid grid-cols-1 gap-2 p-3 sm:grid-cols-2 lg:grid-cols-4">
+                    <label class="text-[11px] font-medium text-slate-400">
+                        Base Price (₹)
+                        <input id="base-price" data-calc-input type="number" min="0" step="0.01" inputmode="decimal" placeholder="Enter base price" class="sheet-input mt-1 block">
+                    </label>
+                    <label class="text-[11px] font-medium text-slate-400">
+                        Duration
+                        <select id="duration" data-calc-select class="sheet-input mt-1 block">
+                            <option>1 Year</option>
+                            <option>2 Years</option>
+                            <option>3 Years</option>
+                        </select>
+                    </label>
+                    <label class="text-[11px] font-medium text-slate-400">
+                        Tax Mode
+                        <select id="tax-mode" data-calc-select class="sheet-input mt-1 block">
+                            <option value="exclusive">Exclusive of GST (+18%)</option>
+                            <option value="inclusive">Inclusive of GST</option>
+                        </select>
+                    </label>
+                    <div class="rounded-md border border-slate-700 bg-slate-900/70 px-3 py-2">
+                        <span class="block text-[11px] font-medium text-slate-400">Total Unit Price</span>
+                        <strong id="unit-price" class="mt-1 block text-sm font-bold text-cyan-300">—</strong>
+                        <span id="unit-price-note" class="text-[10px] text-slate-500">Enter a base price</span>
                     </div>
                 </div>
+            </section>
 
-
-                <!-- DUAL-INPUT TIER MARGIN ENGINE (T1, T2, T3) -->
-                <div class="cyber-card p-5 rounded-2xl">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-                        <div>
-                            <h2 class="text-sm font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
-                                <i class="fa-solid fa-diagram-project"></i>
-                                2. Tier Margin Engine (Bidirectional Dual-Inputs)
-                            </h2>
-                            <p class="text-xs text-slate-400">Edit percentage (%) or monetary amount (₹) to automatically compute partner prices and margins.</p>
-                        </div>
-                        <span class="text-[11px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-md font-mono">
-                            Base: <span id="tier-base-ref">₹500</span>
-                        </span>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        
-                        <!-- TIER 1 -->
-                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
-                            <div class="flex justify-between items-center mb-3">
-                                <span class="text-xs font-bold uppercase tracking-wider text-indigo-400">Tier 1 (T1 Partner)</span>
-                                <span class="text-[10px] text-slate-400 font-mono" id="t1-effective-price">Cost: ₹450</span>
-                            </div>
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Margin %</label>
-                                    <input type="number" id="t1-percent" value="10" step="0.1" oninput="onTierChange('T1', 'percent', this.value)" class="w-full bg-slate-800 text-white font-semibold text-sm px-2.5 py-2 rounded-lg border border-slate-700 focus:border-indigo-500 focus:outline-none">
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Margin Value (₹)</label>
-                                    <input type="number" id="t1-amount" value="50" step="1" oninput="onTierChange('T1', 'amount', this.value)" class="w-full bg-slate-800 text-white font-semibold text-sm px-2.5 py-2 rounded-lg border border-slate-700 focus:border-indigo-500 focus:outline-none">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- TIER 2 -->
-                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
-                            <div class="flex justify-between items-center mb-3">
-                                <span class="text-xs font-bold uppercase tracking-wider text-cyan-400">Tier 2 (T2 Partner)</span>
-                                <span class="text-[10px] text-slate-400 font-mono" id="t2-effective-price">Cost: ₹425</span>
-                            </div>
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Margin %</label>
-                                    <input type="number" id="t2-percent" value="15" step="0.1" oninput="onTierChange('T2', 'percent', this.value)" class="w-full bg-slate-800 text-white font-semibold text-sm px-2.5 py-2 rounded-lg border border-slate-700 focus:border-cyan-500 focus:outline-none">
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Margin Value (₹)</label>
-                                    <input type="number" id="t2-amount" value="75" step="1" oninput="onTierChange('T2', 'amount', this.value)" class="w-full bg-slate-800 text-white font-semibold text-sm px-2.5 py-2 rounded-lg border border-slate-700 focus:border-cyan-500 focus:outline-none">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- TIER 3 -->
-                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
-                            <div class="flex justify-between items-center mb-3">
-                                <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Tier 3 (T3 Partner)</span>
-                                <span class="text-[10px] text-slate-400 font-mono" id="t3-effective-price">Cost: ₹400</span>
-                            </div>
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Margin %</label>
-                                    <input type="number" id="t3-percent" value="20" step="0.1" oninput="onTierChange('T3', 'percent', this.value)" class="w-full bg-slate-800 text-white font-semibold text-sm px-2.5 py-2 rounded-lg border border-slate-700 focus:border-emerald-500 focus:outline-none">
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Margin Value (₹)</label>
-                                    <input type="number" id="t3-amount" value="100" step="1" oninput="onTierChange('T3', 'amount', this.value)" class="w-full bg-slate-800 text-white font-semibold text-sm px-2.5 py-2 rounded-lg border border-slate-700 focus:border-emerald-500 focus:outline-none">
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
+            <section class="cyber-card overflow-hidden rounded-xl">
+                <div class="flex items-center justify-between border-b border-slate-700 px-3 py-2">
+                    <h2 class="text-xs font-bold uppercase tracking-wide text-cyan-300">1. Company Production Cost <span class="normal-case font-medium text-slate-400">(per key)</span></h2>
+                    <span class="text-[10px] text-slate-500">All cost inputs are editable</span>
                 </div>
-
-
-                <!-- DYNAMIC SCHEME SLABS MATRIX TABLE -->
-                <div class="cyber-card p-5 rounded-2xl overflow-hidden">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-                        <div>
-                            <h2 class="text-sm font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-2">
-                                <i class="fa-solid fa-table-list"></i>
-                                3. Scheme Slabs Matrix (Decoded Logic)
-                            </h2>
-                            <p class="text-xs text-slate-400">Stock valuation, 18% GST tax calculation, stock offer incentives, and reward activations.</p>
-                        </div>
-                        <button onclick="addSchemeRow()" class="no-print bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 self-start sm:self-auto shadow-md">
-                            <i class="fa-solid fa-plus"></i>
-                            <span>Add Custom Scheme Row</span>
-                        </button>
-                    </div>
-
-                    <!-- TABLE CONTAINER -->
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs border-collapse">
-                            <thead>
-                                <tr class="bg-slate-900/90 text-slate-400 uppercase tracking-wider border-b border-slate-800 font-semibold">
-                                    <th class="p-3">Box Qty</th>
-                                    <th class="p-3">Keys / Box</th>
-                                    <th class="p-3">Total Keys</th>
-                                    <th class="p-3">Stock Value (₹)</th>
-                                    <th class="p-3">GST (18%)</th>
-                                    <th class="p-3">Stock Offer %</th>
-                                    <th class="p-3">Offer Value (₹)</th>
-                                    <th class="p-3">Free Keys</th>
-                                    <th class="p-3">Reward Cash (₹)</th>
-                                    <th class="p-3 no-print text-center">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="scheme-table-body" class="divide-y divide-slate-800/60 font-mono">
-                                <!-- Dynamic JS Injection -->
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="sheet-scroll overflow-x-auto">
+                    <table class="sheet-table w-full min-w-[700px] text-left text-[11px]">
+                        <thead class="bg-slate-900/70 text-[10px] uppercase tracking-wide text-slate-400">
+                            <tr>
+                                <th class="font-semibold">Key Generation Cost (₹)</th>
+                                <th class="font-semibold">Reserved Partner Margin (₹)</th>
+                                <th class="font-semibold">Box Manufacturing &amp; Handling (₹)</th>
+                                <th class="font-semibold">Tier 1 (T1) Margin (₹)</th>
+                                <th class="font-semibold">Tier 2 (T2) Margin (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><label class="sr-only" for="key-generation-cost">Key Generation Cost</label><input id="key-generation-cost" data-calc-input type="number" min="0" step="0.01" placeholder="₹ 0.00" class="sheet-input"></td>
+                                <td><label class="sr-only" for="reserved-margin">Reserved Partner Margin</label><input id="reserved-margin" data-calc-input type="number" min="0" step="0.01" placeholder="₹ 0.00" class="sheet-input"></td>
+                                <td><label class="sr-only" for="box-charge">Box Manufacturing and Handling Charge</label><input id="box-charge" data-calc-input type="number" min="0" step="0.01" placeholder="₹ 0.00" class="sheet-input"></td>
+                                <td><label class="sr-only" for="t1-margin">Tier 1 Margin</label><input id="t1-margin" data-calc-input type="number" min="0" step="0.01" placeholder="₹ 0.00" class="sheet-input"></td>
+                                <td><label class="sr-only" for="t2-margin">Tier 2 Margin</label><input id="t2-margin" data-calc-input type="number" min="0" step="0.01" placeholder="₹ 0.00" class="sheet-input"></td>
+                            </tr>
+                            <tr class="bg-slate-900/50">
+                                <td colspan="4" class="text-right font-semibold text-slate-300">Total Company Production Cost (1 Key)</td>
+                                <td id="production-total" class="whitespace-nowrap font-bold text-amber-300">₹ 0.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
+            </section>
 
-
-                <!-- EXPENSE & PROFITABILITY ANALYTICS CARD -->
-                <div class="cyber-card p-5 rounded-2xl">
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2 mb-4">
-                        <i class="fa-solid fa-chart-pie"></i>
-                        4. Unit Economics & Profitability Analytics
-                    </h2>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        
-                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
-                            <span class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Production Allocation</span>
-                            <div class="text-xl font-extrabold text-white" id="summary-prod-val">₹120.00</div>
-                            <span class="text-[10px] text-slate-500 mt-1 block" id="summary-prod-pct">24% of Base Price</span>
-                        </div>
-
-                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
-                            <span class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Max Stock Offer Share</span>
-                            <div class="text-xl font-extrabold text-indigo-400" id="summary-offer-val">₹165.00</div>
-                            <span class="text-[10px] text-slate-500 mt-1 block" id="summary-offer-pct">33% of Stock Value</span>
-                        </div>
-
-                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
-                            <span class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Free Keys + Cash Reward / Key</span>
-                            <div class="text-xl font-extrabold text-cyan-400" id="summary-reward-val">₹30.00</div>
-                            <span class="text-[10px] text-slate-500 mt-1 block">Worst-case editable slab allocation</span>
-                        </div>
-
-                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
-                            <span class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Net Company Revenue / Key</span>
-                            <div class="text-xl font-extrabold text-emerald-400" id="summary-net-profit">₹180.00</div>
-                            <span class="text-[10px] text-slate-500 mt-1 block" id="summary-profit-margin">36% Net Margin</span>
-                        </div>
-
-                    </div>
-
-                    <!-- BATCH CALCULATION BREAKDOWN (PER 300 KEYS) -->
-                    <div class="mt-4 p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-                        <div>
-                            <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Master Scheme Batch (300 Key Standard Batch)</h3>
-                            <p class="text-xs text-slate-400">Total batch stock value: <span id="batch-stock-value" class="text-white font-bold font-mono">₹1,50,000</span> | Max Stock Offer Value: <span id="batch-offer-value" class="text-indigo-300 font-bold font-mono">₹49,500</span></p>
-                        </div>
-                        <div class="text-left md:text-right">
-                            <span class="text-[10px] uppercase text-slate-400 block">Total Batch Net Revenue</span>
-                            <span id="batch-net-profit" class="text-lg font-bold text-emerald-400 font-mono">₹54,000</span>
-                        </div>
-                    </div>
+            <section class="cyber-card overflow-hidden rounded-xl">
+                <div class="border-b border-slate-700 px-3 py-2">
+                    <h2 class="text-xs font-bold uppercase tracking-wide text-indigo-300">2. Tier 3 (T3) Partner Scheme &amp; Profit Engine <span class="normal-case font-medium text-slate-400">(per key)</span></h2>
                 </div>
-
-            </main>
-
-            <!-- FOOTER -->
-            <footer class="bg-cyber-800 border-t border-slate-800 py-4 mt-auto no-print">
-                <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
-                    Sentinel Genesis Technologies Pvt Ltd &bull; Scheme & Pricing Engine &bull; Confidential & Proprietary
+                <div class="sheet-scroll overflow-x-auto">
+                    <table class="sheet-table w-full min-w-[700px] text-left text-[11px]">
+                        <thead class="bg-slate-900/70 text-[10px] uppercase tracking-wide text-slate-400">
+                            <tr>
+                                <th class="font-semibold">Calculation Line</th>
+                                <th class="font-semibold">Editable Input</th>
+                                <th class="font-semibold">Calculated Value</th>
+                                <th class="font-semibold">Basis / Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="font-medium text-slate-200">Market Operating Price (MOP)</td>
+                                <td><label class="sr-only" for="mop">Market Operating Price</label><input id="mop" data-calc-input type="number" min="0" step="0.01" placeholder="Enter MOP" class="sheet-input"></td>
+                                <td id="mop-display" class="whitespace-nowrap font-bold text-cyan-300">—</td>
+                                <td class="text-slate-500">Defaults to product base price</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium text-slate-200">Stock Scheme (Scheme 1)</td>
+                                <td><div class="flex items-center gap-1"><input id="stock-percent" data-calc-input type="number" min="0" max="100" step="0.01" value="20" class="sheet-input w-24"><span class="text-slate-400">%</span></div></td>
+                                <td id="stock-deduction" class="whitespace-nowrap font-semibold text-amber-300">—</td>
+                                <td class="text-slate-500">MOP × percentage</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium text-slate-200">Reward Key Offer (₹/key)</td>
+                                <td><label class="sr-only" for="reward-cost">Reward Key Cost per Key</label><input id="reward-cost" data-calc-input type="number" min="0" step="0.01" value="30" class="sheet-input"></td>
+                                <td id="reward-percent" class="whitespace-nowrap font-semibold text-amber-300">—</td>
+                                <td class="text-slate-500">Reward cost as a share of MOP</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium text-slate-200">Activation Goal Achievement (Scheme 2)</td>
+                                <td><div class="flex items-center gap-1"><input id="activation-percent" data-calc-input type="number" min="0" max="100" step="0.01" value="20" class="sheet-input w-24"><span class="text-slate-400">%</span></div></td>
+                                <td id="activation-deduction" class="whitespace-nowrap font-semibold text-amber-300">—</td>
+                                <td class="text-slate-500">MOP × bonus percentage</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium text-slate-200">Company Production &amp; Tier Cost</td>
+                                <td class="text-slate-500">Automatic from Section 1</td>
+                                <td id="t3-production-cost" class="whitespace-nowrap font-semibold text-slate-300">₹ 0.00</td>
+                                <td class="text-slate-500">Production + reserved + T1 + T2 costs</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-            </footer>
-        </div>
+                <div id="per-key-profit-banner" class="profit-state m-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2">
+                    <span class="text-xs font-semibold text-slate-200">Per-Key Net Profit / Loss</span>
+                    <strong id="per-key-profit" class="text-sm font-extrabold">—</strong>
+                </div>
+            </section>
 
+            <section class="cyber-card overflow-hidden rounded-xl">
+                <div class="border-b border-slate-700 px-3 py-2">
+                    <h2 class="text-xs font-bold uppercase tracking-wide text-emerald-300">3. Scheme Volume &amp; Overall Profitability</h2>
+                </div>
+                <div class="sheet-scroll overflow-x-auto">
+                    <table class="sheet-table w-full min-w-[650px] text-left text-[11px]">
+                        <thead class="bg-slate-900/70 text-[10px] uppercase tracking-wide text-slate-400">
+                            <tr>
+                                <th class="font-semibold">Metric</th>
+                                <th class="font-semibold">Input / Basis</th>
+                                <th class="font-semibold">Calculated Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="font-medium text-slate-200">Scheme Volume</td>
+                                <td><div class="flex items-center gap-2"><input id="scheme-volume" data-calc-input type="number" min="0" step="1" value="300" class="sheet-input w-28"><span class="text-slate-400">keys</span></div></td>
+                                <td id="volume-display" class="font-semibold text-slate-300">300 keys</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium text-slate-200">Total Scheme Billing Value (Excl. GST)</td>
+                                <td class="text-slate-500">Volume × MOP, before GST</td>
+                                <td id="billing-exclusive" class="whitespace-nowrap font-bold text-slate-200">—</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium text-slate-200">Total Scheme Billing Value (Incl. GST)</td>
+                                <td class="text-slate-500">Volume × MOP, including GST</td>
+                                <td id="billing-inclusive" class="whitespace-nowrap font-bold text-slate-200">—</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium text-slate-200">Total Stock Scheme Cost (Scheme 1)</td>
+                                <td class="text-slate-500">Volume × Scheme 1 per key</td>
+                                <td id="total-stock-cost" class="whitespace-nowrap font-semibold text-amber-300">—</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium text-slate-200">Total Reward Key Cost</td>
+                                <td class="text-slate-500">Volume × reward cost per key</td>
+                                <td id="total-reward-cost" class="whitespace-nowrap font-semibold text-amber-300">—</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium text-slate-200">Total Activation Scheme Cost (Scheme 2)</td>
+                                <td class="text-slate-500">Volume × Scheme 2 per key</td>
+                                <td id="total-activation-cost" class="whitespace-nowrap font-semibold text-amber-300">—</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="overall-profit-banner" class="profit-state m-2 flex flex-col items-center justify-between gap-1 rounded-lg border border-slate-700 bg-slate-900/70 px-4 py-3 text-center sm:flex-row sm:text-left">
+                    <div>
+                        <span class="block text-xs font-semibold text-slate-200">Final Overall Net Profit / Loss</span>
+                        <span id="overall-profit-note" class="text-[10px] text-slate-500">Scheme volume × per-key net profit/loss</span>
+                    </div>
+                    <strong id="overall-profit" class="text-xl font-extrabold">—</strong>
+                </div>
+            </section>
+        </main>
+
+        <footer class="mt-auto border-t border-slate-800 bg-cyber-800 py-3 no-print">
+            <div class="mx-auto max-w-7xl px-4 text-center text-[10px] text-slate-500">
+                Sentinel Genesis Technologies Pvt Ltd &bull; Scheme &amp; Pricing Engine
+            </div>
+        </footer>
     </div>
 
-    <!-- ========================================== -->
-    <!-- JAVASCRIPT REVENUE & STATE LOGIC           -->
-    <!-- ========================================== -->
     <script>
-        // --- 1. GLOBAL REACTIVE STATE ---
-        let appState = {
-            selectedProduct: 'TS', // Default product
-            products: {
-                AV: { name: 'Antivirus (AV)', basePrice: 300 },
-                IS: { name: 'Internet Security (IS)', basePrice: 400 },
-                TS: { name: 'Total Security (TS)', basePrice: 500 }
-            },
-            keyDuration: '1 Year / 1 PC',
-            taxRate: 18,
-            productionCost: 120,
-            handlingCost: 5,
-            tiers: {
-                T1: { percent: 10, amount: 50 },
-                T2: { percent: 15, amount: 75 },
-                T3: { percent: 20, amount: 100 }
-            },
-            // Default Scheme Slabs decoded from Excel screenshot
-            slabs: [
-                { id: 1, boxQty: 1,  keysPerBox: 10,  stockOfferPercent: 20, rewardFreeKeys: 2,  reward2: 1000 },
-                { id: 2, boxQty: 2,  keysPerBox: 20,  stockOfferPercent: 20, rewardFreeKeys: 4,  reward2: 2000 },
-                { id: 3, boxQty: 5,  keysPerBox: 50,  stockOfferPercent: 20, rewardFreeKeys: 10, reward2: 5000 },
-                { id: 4, boxQty: 10, keysPerBox: 100, stockOfferPercent: 20, rewardFreeKeys: 20, reward2: 10000 },
-                { id: 5, boxQty: 15, keysPerBox: 150, stockOfferPercent: 20, rewardFreeKeys: 30, reward2: 15000 },
-                { id: 6, boxQty: 20, keysPerBox: 200, stockOfferPercent: 20, rewardFreeKeys: 40, reward2: 20000 },
-                { id: 7, boxQty: 30, keysPerBox: 300, stockOfferPercent: 33, rewardFreeKeys: 60, reward2: 30000 }
-            ]
+        const GST_RATE = 0.18;
+        const productNames = {
+            AV: 'Antivirus (AV)',
+            IS: 'Internet Security (IS)',
+            TS: 'Total Security (TS)'
         };
-
-        // --- 2. DASHBOARD INITIALIZATION ---
-        window.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('current-user-display').textContent = sessionStorage.getItem('sentinel_username') || 'Authenticated User';
-            renderProductTabs();
-            syncTierInputs();
-            renderTable();
-            recalculateAnalytics();
+        const state = {
+            selectedProduct: 'TS',
+            basePrices: { AV: '', IS: '', TS: '' },
+            mopFollowsBase: true
+        };
+        const currencyFormatter = new Intl.NumberFormat('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
         });
+
+        function formatCurrency(value) {
+            return `₹ ${currencyFormatter.format(value)}`;
+        }
+
+        function readNumber(id) {
+            const input = document.getElementById(id);
+            if (input.value.trim() === '') return 0;
+            const value = Number(input.value);
+            return Number.isFinite(value) ? value : 0;
+        }
+
+        function hasMop() {
+            const value = document.getElementById('mop').value.trim();
+            return value !== '' && Number.isFinite(Number(value));
+        }
+
+        function updateProductTabs() {
+            document.querySelectorAll('[data-product]').forEach(button => {
+                const active = button.dataset.product === state.selectedProduct;
+                button.setAttribute('aria-pressed', String(active));
+                button.className = active
+                    ? 'product-tab rounded-md border border-indigo-500 bg-indigo-900/40 px-3 py-1.5 text-xs font-semibold text-white transition'
+                    : 'product-tab rounded-md border border-transparent px-3 py-1.5 text-xs font-semibold text-slate-400 transition hover:border-slate-700 hover:text-white';
+            });
+        }
+
+        function updateUnitPrice() {
+            const baseValue = document.getElementById('base-price').value.trim();
+            const unitPrice = document.getElementById('unit-price');
+            const note = document.getElementById('unit-price-note');
+            if (baseValue === '' || !Number.isFinite(Number(baseValue))) {
+                unitPrice.textContent = '—';
+                note.textContent = 'Enter a base price';
+                return;
+            }
+
+            const basePrice = Number(baseValue);
+            const inclusive = document.getElementById('tax-mode').value === 'inclusive';
+            const duration = document.getElementById('duration').value;
+            const finalUnitPrice = inclusive ? basePrice : basePrice * (1 + GST_RATE);
+            unitPrice.textContent = formatCurrency(finalUnitPrice);
+            note.textContent = `${inclusive ? 'Includes' : 'Plus'} 18% GST · ${duration}`;
+        }
+
+        function updateProfitBanner(elementId, valueId, value) {
+            const banner = document.getElementById(elementId);
+            const output = document.getElementById(valueId);
+            banner.classList.remove(
+                'border-emerald-800', 'bg-emerald-950/40', 'text-emerald-400',
+                'border-rose-800', 'bg-rose-950/40', 'text-rose-400',
+                'border-slate-700', 'bg-slate-900/70', 'text-slate-300'
+            );
+            if (value > 0) {
+                banner.classList.add('border-emerald-800', 'bg-emerald-950/40', 'text-emerald-400');
+                output.className = elementId === 'overall-profit-banner'
+                    ? 'text-xl font-extrabold text-emerald-400'
+                    : 'text-sm font-extrabold text-emerald-400';
+            } else if (value < 0) {
+                banner.classList.add('border-rose-800', 'bg-rose-950/40', 'text-rose-400');
+                output.className = elementId === 'overall-profit-banner'
+                    ? 'text-xl font-extrabold text-rose-400'
+                    : 'text-sm font-extrabold text-rose-400';
+            } else {
+                banner.classList.add('border-slate-700', 'bg-slate-900/70', 'text-slate-300');
+                output.className = elementId === 'overall-profit-banner'
+                    ? 'text-xl font-extrabold text-slate-300'
+                    : 'text-sm font-extrabold text-slate-300';
+            }
+            output.textContent = Number.isFinite(value) ? formatCurrency(value) : '—';
+        }
+
+        function calculate() {
+            const basePriceInput = document.getElementById('base-price');
+            state.basePrices[state.selectedProduct] = basePriceInput.value;
+            const baseValue = basePriceInput.value.trim();
+            if (state.mopFollowsBase) {
+                document.getElementById('mop').value = baseValue;
+            }
+
+            const productionCost = [
+                'key-generation-cost',
+                'reserved-margin',
+                'box-charge',
+                't1-margin',
+                't2-margin'
+            ].reduce((total, id) => total + readNumber(id), 0);
+            document.getElementById('production-total').textContent = formatCurrency(productionCost);
+            document.getElementById('t3-production-cost').textContent = formatCurrency(productionCost);
+
+            updateUnitPrice();
+
+            const mop = readNumber('mop');
+            const mopIsSet = hasMop();
+            const stockPercent = readNumber('stock-percent');
+            const rewardCost = readNumber('reward-cost');
+            const activationPercent = readNumber('activation-percent');
+            const stockDeduction = mop * stockPercent / 100;
+            const activationDeduction = mop * activationPercent / 100;
+            const perKeyProfit = mop - stockDeduction - rewardCost - activationDeduction - productionCost;
+
+            document.getElementById('mop-display').textContent = mopIsSet ? formatCurrency(mop) : '—';
+            document.getElementById('stock-deduction').textContent = mopIsSet ? formatCurrency(stockDeduction) : '—';
+            document.getElementById('reward-percent').textContent = mopIsSet && mop !== 0
+                ? `${currencyFormatter.format(rewardCost / mop * 100)}% of MOP`
+                : '—';
+            document.getElementById('activation-deduction').textContent = mopIsSet ? formatCurrency(activationDeduction) : '—';
+            updateProfitBanner('per-key-profit-banner', 'per-key-profit', mopIsSet ? perKeyProfit : NaN);
+
+            const volume = readNumber('scheme-volume');
+            const volumeLabel = `${currencyFormatter.format(volume)} ${volume === 1 ? 'key' : 'keys'}`;
+            document.getElementById('volume-display').textContent = volumeLabel;
+
+            const exclusiveMode = document.getElementById('tax-mode').value === 'exclusive';
+            const billingBeforeTax = mop * volume;
+            const billingExclusive = exclusiveMode ? billingBeforeTax : billingBeforeTax / (1 + GST_RATE);
+            const billingInclusive = exclusiveMode ? billingBeforeTax * (1 + GST_RATE) : billingBeforeTax;
+            document.getElementById('billing-exclusive').textContent = mopIsSet ? formatCurrency(billingExclusive) : '—';
+            document.getElementById('billing-inclusive').textContent = mopIsSet ? formatCurrency(billingInclusive) : '—';
+            document.getElementById('total-stock-cost').textContent = mopIsSet ? formatCurrency(stockDeduction * volume) : '—';
+            document.getElementById('total-reward-cost').textContent = mopIsSet ? formatCurrency(rewardCost * volume) : '—';
+            document.getElementById('total-activation-cost').textContent = mopIsSet ? formatCurrency(activationDeduction * volume) : '—';
+            updateProfitBanner('overall-profit-banner', 'overall-profit', mopIsSet ? perKeyProfit * volume : NaN);
+        }
+
+        function selectProduct(productCode) {
+            if (!Object.hasOwn(productNames, productCode)) return;
+            state.selectedProduct = productCode;
+            state.mopFollowsBase = true;
+            document.getElementById('base-price').value = state.basePrices[productCode];
+            updateProductTabs();
+            calculate();
+        }
+
+        function resetCalculator() {
+            state.basePrices = { AV: '', IS: '', TS: '' };
+            state.selectedProduct = 'TS';
+            state.mopFollowsBase = true;
+            document.getElementById('base-price').value = '';
+            document.getElementById('duration').value = '1 Year';
+            document.getElementById('tax-mode').value = 'exclusive';
+            document.getElementById('key-generation-cost').value = '';
+            document.getElementById('reserved-margin').value = '';
+            document.getElementById('box-charge').value = '';
+            document.getElementById('t1-margin').value = '';
+            document.getElementById('t2-margin').value = '';
+            document.getElementById('mop').value = '';
+            document.getElementById('stock-percent').value = '20';
+            document.getElementById('reward-cost').value = '30';
+            document.getElementById('activation-percent').value = '20';
+            document.getElementById('scheme-volume').value = '300';
+            updateProductTabs();
+            calculate();
+        }
 
         function handleLogout() {
             sessionStorage.clear();
             window.location.href = 'index.html';
         }
 
-        // --- 3. PRODUCT & BASELINE CONTROLS ---
-        function selectProduct(prodCode) {
-            appState.selectedProduct = prodCode;
-            renderProductTabs();
-            
-            // Recalculate tier amounts based on new product base price
-            const basePrice = appState.products[prodCode].basePrice;
-            ['T1', 'T2', 'T3'].forEach(tier => {
-                appState.tiers[tier].amount = (basePrice * (appState.tiers[tier].percent / 100));
-            });
-            
-            syncTierInputs();
-            renderTable();
-            recalculateAnalytics();
-        }
-
-        function renderProductTabs() {
-            const active = appState.selectedProduct;
-            
-            ['AV', 'IS', 'TS'].forEach(p => {
-                const btn = document.getElementById(`tab-${p}`);
-                const priceSpan = document.getElementById(`tab-price-${p}`);
-                priceSpan.innerText = `₹${appState.products[p].basePrice}`;
-
-                if (p === active) {
-                    btn.className = "p-3 rounded-xl border border-indigo-500 bg-indigo-600/20 text-indigo-300 text-center transition flex flex-col items-center gap-1 font-bold shadow-lg shadow-indigo-500/10";
-                } else {
-                    btn.className = "p-3 rounded-xl border border-slate-700 bg-slate-900/60 text-slate-400 hover:text-white hover:border-slate-600 text-center transition flex flex-col items-center gap-1 font-medium";
-                }
-            });
-
-            document.getElementById('input-base-price').value = appState.products[active].basePrice;
-            document.getElementById('tier-base-ref').innerText = `₹${appState.products[active].basePrice}`;
-        }
-
-        function updateBasePrice(val) {
-            const num = parseFloat(val) || 0;
-            appState.products[appState.selectedProduct].basePrice = num;
-            document.getElementById(`tab-price-${appState.selectedProduct}`).innerText = `₹${num}`;
-            document.getElementById('tier-base-ref').innerText = `₹${num}`;
-            
-            // Re-sync Tier Margins
-            ['T1', 'T2', 'T3'].forEach(tier => {
-                appState.tiers[tier].amount = (num * (appState.tiers[tier].percent / 100));
-            });
-
-            syncTierInputs();
-            renderTable();
-            recalculateAnalytics();
-        }
-
-        function updateKeyDuration(val) {
-            appState.keyDuration = val;
-        }
-
-        function updateTaxRate(val) {
-            appState.taxRate = parseFloat(val) || 0;
-            renderTable();
-        }
-
-        function updateProdCost(val) {
-            appState.productionCost = parseFloat(val) || 0;
-            updateTotalBaseCostDisplay();
-            recalculateAnalytics();
-        }
-
-        function updateHandlingCost(val) {
-            appState.handlingCost = parseFloat(val) || 0;
-            updateTotalBaseCostDisplay();
-            recalculateAnalytics();
-        }
-
-        function updateTotalBaseCostDisplay() {
-            const total = appState.productionCost + appState.handlingCost;
-            document.getElementById('display-total-base-cost').innerText = `₹${total.toFixed(2)} / key`;
-        }
-
-        // --- 6. DUAL-INPUT TIER MARGIN LOGIC ---
-        function onTierChange(tier, field, val) {
-            const value = parseFloat(val) || 0;
-            const basePrice = appState.products[appState.selectedProduct].basePrice;
-
-            if (field === 'percent') {
-                appState.tiers[tier].percent = value;
-                appState.tiers[tier].amount = (basePrice * (value / 100));
-            } else if (field === 'amount') {
-                appState.tiers[tier].amount = value;
-                appState.tiers[tier].percent = basePrice > 0 ? (value / basePrice) * 100 : 0;
-            }
-
-            syncTierInputs();
-            recalculateAnalytics();
-        }
-
-        function syncTierInputs() {
-            const basePrice = appState.products[appState.selectedProduct].basePrice;
-
-            ['T1', 'T2', 'T3'].forEach(t => {
-                const percentInput = document.getElementById(`${t.toLowerCase()}-percent`);
-                const amountInput = document.getElementById(`${t.toLowerCase()}-amount`);
-                const effectiveSpan = document.getElementById(`${t.toLowerCase()}-effective-price`);
-
-                percentInput.value = (appState.tiers[t].percent).toFixed(1);
-                amountInput.value = Math.round(appState.tiers[t].amount);
-
-                const partnerCost = basePrice - appState.tiers[t].amount;
-                effectiveSpan.innerText = `Partner Price: ₹${Math.max(0, partnerCost)}`;
-            });
-        }
-
-        // --- 7. DYNAMIC SCHEME SLABS TABLE RENDER ---
-        function renderTable() {
-            const tbody = document.getElementById('scheme-table-body');
-            tbody.innerHTML = '';
-
-            const basePrice = appState.products[appState.selectedProduct].basePrice;
-            const taxMultiplier = appState.taxRate / 100;
-
-            appState.slabs.forEach((slab, index) => {
-                const totalKeys = slab.boxQty * slab.keysPerBox;
-                const stockValue = totalKeys * basePrice;
-                const taxVal = stockValue * taxMultiplier;
-                const offerVal = stockValue * (slab.stockOfferPercent / 100);
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-800/40 transition border-b border-slate-800/60";
-
-                tr.innerHTML = `
-                    <td class="p-2.5">
-                        <input type="number" value="${slab.boxQty}" min="1" onchange="updateSlab(${index}, 'boxQty', this.value)" class="w-14 bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-white text-center focus:outline-none focus:border-indigo-500">
-                    </td>
-                    <td class="p-2.5">
-                        <input type="number" value="${slab.keysPerBox}" min="1" onchange="updateSlab(${index}, 'keysPerBox', this.value)" class="w-16 bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-white text-center focus:outline-none focus:border-indigo-500">
-                    </td>
-                    <td class="p-2.5 font-bold text-slate-200">${totalKeys}</td>
-                    <td class="p-2.5 text-slate-300">₹${stockValue.toLocaleString('en-IN')}</td>
-                    <td class="p-2.5 text-slate-400">₹${taxVal.toLocaleString('en-IN')}</td>
-                    <td class="p-2.5">
-                        <div class="flex items-center gap-1">
-                            <input type="number" value="${slab.stockOfferPercent}" min="0" max="100" onchange="updateSlab(${index}, 'stockOfferPercent', this.value)" class="w-14 bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-indigo-300 font-bold text-center focus:outline-none focus:border-indigo-500">
-                            <span>%</span>
-                        </div>
-                    </td>
-                    <td class="p-2.5 text-indigo-400 font-bold">₹${offerVal.toLocaleString('en-IN')}</td>
-                    <td class="p-2.5">
-                        <input type="number" value="${slab.rewardFreeKeys}" min="0" onchange="updateSlab(${index}, 'rewardFreeKeys', this.value)" class="w-14 bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-cyan-300 text-center focus:outline-none focus:border-cyan-500">
-                    </td>
-                    <td class="p-2.5">
-                        <input type="number" value="${slab.reward2}" min="0" onchange="updateSlab(${index}, 'reward2', this.value)" class="w-20 bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-emerald-300 text-center focus:outline-none focus:border-emerald-500">
-                    </td>
-                    <td class="p-2.5 no-print text-center">
-                        <button onclick="removeSlab(${index})" class="text-red-400 hover:text-red-300 p-1.5 rounded hover:bg-red-500/10 transition" title="Delete Row">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function updateSlab(index, field, val) {
-            appState.slabs[index][field] = parseFloat(val) || 0;
-            renderTable();
-            recalculateAnalytics();
-        }
-
-        function addSchemeRow() {
-            const nextId = appState.slabs.length + 1;
-            appState.slabs.push({
-                id: Date.now(),
-                boxQty: 10,
-                keysPerBox: 100,
-                stockOfferPercent: 20,
-                rewardFreeKeys: 20,
-                reward2: 10000
-            });
-            renderTable();
-            recalculateAnalytics();
-            showToast('New Scheme Row Added', 'info');
-        }
-
-        function removeSlab(index) {
-            if (appState.slabs.length <= 1) {
-                showToast('At least one scheme row is required!', 'error');
-                return;
-            }
-            appState.slabs.splice(index, 1);
-            renderTable();
-            recalculateAnalytics();
-            showToast('Row Removed', 'info');
-        }
-
-        // --- 8. UNIT ECONOMICS & PROFITABILITY ANALYTICS ---
-        function recalculateAnalytics() {
-            const basePrice = appState.products[appState.selectedProduct].basePrice;
-            const prodCost = appState.productionCost;
-            const handling = appState.handlingCost;
-            const totalBaseCost = prodCost + handling;
-
-            const worstSlab = appState.slabs.map(s => {
-                const totalKeys = s.boxQty * s.keysPerBox;
-                const freeKeyRate = totalKeys > 0 ? s.rewardFreeKeys / totalKeys : 0;
-                const cashRewardPerKey = totalKeys > 0 ? s.reward2 / totalKeys : 0;
-                const stockOfferPerKey = basePrice * (s.stockOfferPercent / 100);
-                return {
-                    stockOfferPercent: s.stockOfferPercent,
-                    stockOfferPerKey,
-                    freeKeyValuePerKey: basePrice * freeKeyRate,
-                    cashRewardPerKey,
-                    netRevenuePerKey: basePrice - totalBaseCost - stockOfferPerKey - (basePrice * freeKeyRate) - cashRewardPerKey
-                };
-            }).reduce((worst, scenario) => scenario.netRevenuePerKey < worst.netRevenuePerKey ? scenario : worst);
-            const stockOfferAllocation = worstSlab.stockOfferPerKey;
-            const freeKeyIncentiveVal = worstSlab.freeKeyValuePerKey;
-            const netProfitPerKey = worstSlab.netRevenuePerKey;
-
-            // Update DOM
-            document.getElementById('summary-prod-val').innerText = `₹${totalBaseCost.toFixed(2)}`;
-            document.getElementById('summary-prod-pct').innerText = basePrice > 0 ? `${((totalBaseCost / basePrice) * 100).toFixed(1)}% of Base Price` : '0%';
-
-            document.getElementById('summary-offer-val').innerText = `₹${stockOfferAllocation.toFixed(2)}`;
-            document.getElementById('summary-offer-pct').innerText = `${worstSlab.stockOfferPercent}% Worst-case slab offer`;
-
-            document.getElementById('summary-reward-val').innerText = `₹${(freeKeyIncentiveVal + worstSlab.cashRewardPerKey).toFixed(2)}`;
-            
-            document.getElementById('summary-net-profit').innerText = `₹${netProfitPerKey.toFixed(2)}`;
-            document.getElementById('summary-profit-margin').innerText = basePrice > 0 ? `${((netProfitPerKey / basePrice) * 100).toFixed(1)}% Net Margin` : '0%';
-
-            // Standard 300 Key Batch
-            const batchKeys = 300;
-            const batchStockVal = batchKeys * basePrice;
-            const batchOfferVal = batchStockVal * (worstSlab.stockOfferPercent / 100);
-            const batchNetProfit = batchKeys * netProfitPerKey;
-
-            document.getElementById('batch-stock-value').innerText = `₹${batchStockVal.toLocaleString('en-IN')}`;
-            document.getElementById('batch-offer-value').innerText = `₹${batchOfferVal.toLocaleString('en-IN')}`;
-            document.getElementById('batch-net-profit').innerText = `₹${batchNetProfit.toLocaleString('en-IN')}`;
-        }
-
-        function resetToDefaults() {
-            appState.selectedProduct = 'TS';
-            appState.products = {
-                AV: { name: 'Antivirus (AV)', basePrice: 300 },
-                IS: { name: 'Internet Security (IS)', basePrice: 400 },
-                TS: { name: 'Total Security (TS)', basePrice: 500 }
-            };
-            appState.taxRate = 18;
-            appState.productionCost = 120;
-            appState.handlingCost = 5;
-            appState.tiers = {
-                T1: { percent: 10, amount: 50 },
-                T2: { percent: 15, amount: 75 },
-                T3: { percent: 20, amount: 100 }
-            };
-            appState.slabs = [
-                { id: 1, boxQty: 1,  keysPerBox: 10,  stockOfferPercent: 20, rewardFreeKeys: 2,  reward2: 1000 },
-                { id: 2, boxQty: 2,  keysPerBox: 20,  stockOfferPercent: 20, rewardFreeKeys: 4,  reward2: 2000 },
-                { id: 3, boxQty: 5,  keysPerBox: 50,  stockOfferPercent: 20, rewardFreeKeys: 10, reward2: 5000 },
-                { id: 4, boxQty: 10, keysPerBox: 100, stockOfferPercent: 20, rewardFreeKeys: 20, reward2: 10000 },
-                { id: 5, boxQty: 15, keysPerBox: 150, stockOfferPercent: 20, rewardFreeKeys: 30, reward2: 15000 },
-                { id: 6, boxQty: 20, keysPerBox: 200, stockOfferPercent: 20, rewardFreeKeys: 40, reward2: 20000 },
-                { id: 7, boxQty: 30, keysPerBox: 300, stockOfferPercent: 33, rewardFreeKeys: 60, reward2: 30000 }
-            ];
-
-            renderProductTabs();
-            syncTierInputs();
-            renderTable();
-            recalculateAnalytics();
-            showToast('Reset to default values.', 'info');
-        }
-
-        // --- 9. EXPORT TO PDF ---
         function exportToPDF() {
-            document.getElementById('print-date').innerText = new Date().toLocaleDateString('en-IN', {
-                year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
-            });
+            document.getElementById('print-date').textContent = new Date().toLocaleString('en-IN');
             window.print();
         }
 
-        // --- 10. TOAST NOTIFICATION UTILITY ---
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            
-            let bgClass = "bg-slate-800 text-white border-slate-700";
-            let icon = "fa-info-circle text-indigo-400";
+        document.querySelectorAll('[data-calc-input]').forEach(input => {
+            input.addEventListener('input', () => {
+                if (input.id === 'base-price') {
+                    state.basePrices[state.selectedProduct] = input.value;
+                } else if (input.id === 'mop') {
+                    state.mopFollowsBase = false;
+                }
+                calculate();
+            });
+        });
 
-            if (type === 'success') {
-                bgClass = "bg-emerald-950 text-emerald-100 border-emerald-800";
-                icon = "fa-circle-check text-emerald-400";
-            } else if (type === 'error') {
-                bgClass = "bg-red-950 text-red-100 border-red-800";
-                icon = "fa-triangle-exclamation text-red-400";
-            }
-
-            toast.className = `flex items-center gap-2.5 px-4 py-3 rounded-xl border text-xs font-medium shadow-xl transition-all duration-300 transform translate-y-2 ${bgClass}`;
-            const iconElement = document.createElement('i');
-            iconElement.className = `fa-solid ${icon}`;
-            const messageElement = document.createElement('span');
-            messageElement.textContent = message;
-            toast.append(iconElement, messageElement);
-
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                toast.classList.add('opacity-0', '-translate-y-2');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
+        document.querySelectorAll('[data-calc-select]').forEach(select => {
+            select.addEventListener('input', calculate);
+            select.addEventListener('change', calculate);
+        });
+        document.querySelectorAll('[data-product]').forEach(button => {
+            button.addEventListener('click', () => selectProduct(button.dataset.product));
+        });
+        document.getElementById('reset-calculator').addEventListener('click', resetCalculator);
+        document.getElementById('current-user-display').textContent =
+            sessionStorage.getItem('sentinel_username') || 'Authenticated User';
+        calculate();
     </script>
 </body>
 </html>
