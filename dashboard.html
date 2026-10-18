@@ -316,14 +316,50 @@
 
     <script>
         const GST_RATE = 0.18;
+        const DEFAULT_SCHEME_DATA = Object.freeze({
+            AV: Object.freeze({
+                1: Object.freeze({ basePrice: 300, keyGen: 15, partnerMargin: 60, boxMfg: 5, t1Margin: 10, t2Margin: 10, stockSchemePct: 20, rewardKeyCost: 6, activationBonusPct: 20, volume: 330 }),
+                2: Object.freeze({ basePrice: 410, keyGen: 30, partnerMargin: 65, boxMfg: 5, t1Margin: 10, t2Margin: 10, stockSchemePct: 20, rewardKeyCost: 6, activationBonusPct: 20, volume: 280 }),
+                3: Object.freeze({ basePrice: 540, keyGen: 45, partnerMargin: 70, boxMfg: 5, t1Margin: 10, t2Margin: 10, stockSchemePct: 20, rewardKeyCost: 6, activationBonusPct: 20, volume: 200 })
+            }),
+            IS: Object.freeze({
+                1: Object.freeze({ basePrice: 450, keyGen: 25, partnerMargin: 70, boxMfg: 5, t1Margin: 20, t2Margin: 20, stockSchemePct: 20, rewardKeyCost: 6, activationBonusPct: 20, volume: 330 }),
+                2: Object.freeze({ basePrice: 525, keyGen: 50, partnerMargin: 80, boxMfg: 5, t1Margin: 20, t2Margin: 20, stockSchemePct: 20, rewardKeyCost: 6, activationBonusPct: 20, volume: 290 }),
+                3: Object.freeze({ basePrice: 600, keyGen: 75, partnerMargin: 90, boxMfg: 5, t1Margin: 20, t2Margin: 20, stockSchemePct: 20, rewardKeyCost: 6, activationBonusPct: 20, volume: 250 })
+            }),
+            TS: Object.freeze({
+                1: Object.freeze({ basePrice: 550, keyGen: 30, partnerMargin: 90, boxMfg: 5, t1Margin: 20, t2Margin: 20, stockSchemePct: 20, rewardKeyCost: 6, activationBonusPct: 20, volume: 300 }),
+                2: Object.freeze({ basePrice: 750, keyGen: 60, partnerMargin: 90, boxMfg: 5, t1Margin: 20, t2Margin: 20, stockSchemePct: 20, rewardKeyCost: 6, activationBonusPct: 20, volume: 200 }),
+                3: Object.freeze({ basePrice: 990, keyGen: 90, partnerMargin: 90, boxMfg: 5, t1Margin: 20, t2Margin: 20, stockSchemePct: 20, rewardKeyCost: 6, activationBonusPct: 20, volume: 150 })
+            })
+        });
         const productNames = {
             AV: 'Antivirus (AV)',
             IS: 'Internet Security (IS)',
             TS: 'Total Security (TS)'
         };
+        const durationInputMap = {
+            'base-price': 'basePrice',
+            'key-generation-cost': 'keyGen',
+            'reserved-margin': 'partnerMargin',
+            'box-charge': 'boxMfg',
+            't1-margin': 't1Margin',
+            't2-margin': 't2Margin',
+            'stock-percent': 'stockSchemePct',
+            'reward-cost': 'rewardKeyCost',
+            'activation-percent': 'activationBonusPct',
+            'scheme-volume': 'volume'
+        };
+        function createSchemeConfigurations() {
+            return Object.fromEntries(Object.entries(DEFAULT_SCHEME_DATA).map(([product, durations]) => [
+                product,
+                Object.fromEntries(Object.entries(durations).map(([duration, values]) => [duration, { ...values }]))
+            ]));
+        }
         const state = {
             selectedProduct: 'TS',
-            basePrices: { AV: '', IS: '', TS: '' },
+            selectedDuration: '1',
+            configurations: createSchemeConfigurations(),
             mopFollowsBase: true
         };
         const currencyFormatter = new Intl.NumberFormat('en-IN', {
@@ -375,6 +411,26 @@
             note.textContent = `${inclusive ? 'Includes' : 'Plus'} 18% GST · ${duration}`;
         }
 
+        function getActiveConfiguration() {
+            return state.configurations[state.selectedProduct][state.selectedDuration];
+        }
+
+        function saveActiveInput(input) {
+            const field = durationInputMap[input.id];
+            if (field) {
+                getActiveConfiguration()[field] = Number(input.value);
+            }
+        }
+
+        function loadActiveConfiguration() {
+            const configuration = getActiveConfiguration();
+            Object.entries(durationInputMap).forEach(([inputId, field]) => {
+                document.getElementById(inputId).value = configuration[field];
+            });
+            document.getElementById('mop').value = '';
+            state.mopFollowsBase = true;
+        }
+
         function getNetMopFromBase() {
             const baseValue = document.getElementById('base-price').value.trim();
             if (baseValue === '' || !Number.isFinite(Number(baseValue))) return '';
@@ -413,7 +469,6 @@
 
         function calculate() {
             const basePriceInput = document.getElementById('base-price');
-            state.basePrices[state.selectedProduct] = basePriceInput.value;
             const netMop = getNetMopFromBase();
             if (state.mopFollowsBase) {
                 document.getElementById('mop').value = netMop;
@@ -469,29 +524,25 @@
         function selectProduct(productCode) {
             if (!Object.hasOwn(productNames, productCode)) return;
             state.selectedProduct = productCode;
-            state.mopFollowsBase = true;
-            document.getElementById('base-price').value = state.basePrices[productCode];
+            loadActiveConfiguration();
             updateProductTabs();
             calculate();
         }
 
+        function selectDuration(duration) {
+            if (!Object.hasOwn(DEFAULT_SCHEME_DATA[state.selectedProduct], duration)) return;
+            state.selectedDuration = duration;
+            loadActiveConfiguration();
+            calculate();
+        }
+
         function resetCalculator() {
-            state.basePrices = { AV: '', IS: '', TS: '' };
+            state.configurations = createSchemeConfigurations();
             state.selectedProduct = 'TS';
-            state.mopFollowsBase = true;
-            document.getElementById('base-price').value = '';
+            state.selectedDuration = '1';
             document.getElementById('duration').value = '1 Year';
             document.getElementById('tax-mode').value = 'exclusive';
-            document.getElementById('key-generation-cost').value = '';
-            document.getElementById('reserved-margin').value = '';
-            document.getElementById('box-charge').value = '';
-            document.getElementById('t1-margin').value = '';
-            document.getElementById('t2-margin').value = '';
-            document.getElementById('mop').value = '';
-            document.getElementById('stock-percent').value = '20';
-            document.getElementById('reward-cost').value = '30';
-            document.getElementById('activation-percent').value = '20';
-            document.getElementById('scheme-volume').value = '300';
+            loadActiveConfiguration();
             updateProductTabs();
             calculate();
         }
@@ -508,8 +559,8 @@
 
         document.querySelectorAll('[data-calc-input]').forEach(input => {
             input.addEventListener('input', () => {
+                saveActiveInput(input);
                 if (input.id === 'base-price') {
-                    state.basePrices[state.selectedProduct] = input.value;
                     state.mopFollowsBase = true;
                 } else if (input.id === 'mop') {
                     state.mopFollowsBase = false;
@@ -522,8 +573,12 @@
             const handleSelect = () => {
                 if (select.id === 'tax-mode') {
                     state.mopFollowsBase = true;
+                    calculate();
+                } else if (select.id === 'duration') {
+                    selectDuration(select.value.match(/\d+/)[0]);
+                } else {
+                    calculate();
                 }
-                calculate();
             };
             select.addEventListener('input', handleSelect);
             select.addEventListener('change', handleSelect);
@@ -532,6 +587,7 @@
             button.addEventListener('click', () => selectProduct(button.dataset.product));
         });
         document.getElementById('reset-calculator').addEventListener('click', resetCalculator);
+        loadActiveConfiguration();
         document.getElementById('current-user-display').textContent =
             sessionStorage.getItem('sentinel_username') || 'Authenticated User';
         calculate();
