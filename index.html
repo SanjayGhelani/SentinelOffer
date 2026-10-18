@@ -21,72 +21,75 @@
     </script>
     <style>
         body { background: #0b1329; }
-        .access-card { background: linear-gradient(145deg, #131d32, #101828 74%); }
+        .access-card {
+            background: #0b1329;
+            border-color: #1e293b;
+        }
         .auth-tab.active { color: #fff; background: #202b3e; border-color: #48566d; }
         .auth-panel[hidden] { display: none; }
     </style>
 </head>
 <body class="min-h-screen bg-[#0b1329] px-4 py-8 font-sans text-slate-100 antialiased">
     <main class="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-        <section class="access-card w-full max-w-[590px] rounded-3xl border border-slate-700 p-5 shadow-2xl shadow-black/30 sm:p-8">
-            <header class="mb-6 text-center">
-                <div class="mx-auto mb-5 flex h-[125px] w-full max-w-[375px] items-center justify-center rounded-xl border border-slate-200 bg-white p-3">
+        <section class="access-card w-full max-w-md rounded-2xl border p-5 shadow-2xl shadow-black/30 sm:p-6">
+            <header class="mb-5 text-center">
+                <div class="mx-auto mb-4 flex h-[110px] w-full max-w-[375px] items-center justify-center rounded-xl border border-slate-200 bg-white p-3">
                     <img src="images/logo.png" alt="Sentinel Genesis Technologies Pvt Ltd" class="max-h-full max-w-full object-contain">
                 </div>
-                <div class="mb-4 flex items-center gap-3 rounded-xl border border-slate-700/80 bg-slate-800/60 p-3 text-left">
-                    <img src="images/director.png" alt="Founder Sanjay Ghelani" class="h-12 w-12 rounded-full border-2 border-indigo-500/50 object-cover">
-                    <div>
-                        <span class="block text-[10px] font-bold uppercase tracking-widest text-indigo-400">Founder &amp; Managing Director</span>
-                        <span class="text-sm font-semibold text-white">Sanjay Ghelani</span>
+                <div class="mb-4 flex items-center gap-4 rounded-xl border border-slate-700/80 bg-slate-800/60 p-3 text-left">
+                    <img src="images/director.png" alt="Founder Sanjay Ghelani" class="h-20 w-20 shrink-0 rounded-xl border border-slate-600 object-cover">
+                    <div class="flex min-w-0 flex-col">
+                        <span class="text-[10px] font-medium uppercase tracking-wider text-blue-400">FOUNDER &amp; MANAGING DIRECTOR</span>
+                        <span class="text-sm font-bold text-white">Sanjay Ghelani</span>
+                        <span class="text-[11px] font-semibold uppercase tracking-widest text-blue-400">SENTINEL GENESIS TECHNOLOGIES</span>
                     </div>
                 </div>
-                <p class="mb-2 text-xs font-extrabold uppercase tracking-[0.14em] text-sky-400 sm:text-sm">SENTINEL GENESIS TECHNOLOGIES PVT LTD</p>
-                <h1 class="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">Scheme Calculator Access Hub</h1>
-                <p class="mt-2 text-sm text-slate-400">Sign in to access the scheme calculator workspace.</p>
+                <h1 class="text-2xl font-bold tracking-tight text-white">Scheme Calculator Access Hub</h1>
+                <p class="mt-2 text-xs text-slate-400">Sign in to access the scheme calculator workspace.</p>
             </header>
 
             <p id="auth-alert" class="mb-5 hidden rounded-lg border px-3 py-2 text-sm" role="alert" aria-live="polite"></p>
 
-            <nav class="mb-6 grid grid-cols-3 gap-1 rounded-xl border border-slate-700 bg-slate-950/50 p-1" aria-label="Authentication and user management">
-                <button type="button" class="auth-tab active rounded-lg border border-transparent px-2 py-3 text-xs font-bold text-slate-300 transition sm:text-sm" data-tab="sign-in" aria-pressed="true">Sign In</button>
-                <button type="button" class="auth-tab rounded-lg border border-transparent px-2 py-3 text-xs font-bold text-slate-300 transition sm:text-sm" data-tab="add-user" aria-pressed="false">+ Add User</button>
-                <button type="button" class="auth-tab rounded-lg border border-transparent px-2 py-3 text-xs font-bold text-slate-300 transition sm:text-sm" data-tab="reset-users" aria-pressed="false">Reset Users</button>
+            <nav class="mb-5 grid grid-cols-3 gap-1 rounded-xl border border-slate-700 bg-slate-950/50 p-1" aria-label="Authentication and user management">
+                <button type="button" class="auth-tab active rounded-lg border border-transparent px-3 py-1.5 text-xs font-medium text-slate-300 transition" data-tab="sign-in" aria-pressed="true">Sign In</button>
+                <button type="button" class="auth-tab rounded-lg border border-transparent px-3 py-1.5 text-xs font-medium text-slate-300 transition" data-tab="add-user" aria-pressed="false">+ Add User</button>
+                <button type="button" class="auth-tab rounded-lg border border-transparent px-3 py-1.5 text-xs font-medium text-slate-300 transition" data-tab="reset-users" aria-pressed="false">Reset Users</button>
             </nav>
 
             <section class="auth-panel" data-panel="sign-in">
                 <form id="sign-in-form" class="space-y-4">
                     <div>
-                        <label for="username" class="mb-2 block text-xs font-bold text-slate-200">Username / Auditor ID</label>
+                        <label for="username" class="mb-2 block text-xs font-medium text-slate-300">Username / Auditor ID</label>
                         <input id="username" name="username" type="text" required autocomplete="username" placeholder="Enter username"
-                               class="w-full rounded-lg border border-slate-600 bg-slate-100 px-3 py-3 text-slate-950 outline-none focus:ring-2 focus:ring-blue-500">
+                               class="h-10 w-full rounded-lg border border-slate-600 bg-slate-100 px-3 text-sm text-slate-950 outline-none placeholder:text-xs placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label for="password" class="mb-2 block text-xs font-bold text-slate-200">Access Password</label>
+                        <label for="password" class="mb-2 block text-xs font-medium text-slate-300">Access Password</label>
                         <input id="password" name="password" type="password" required autocomplete="current-password" placeholder="Enter access password"
-                               class="w-full rounded-lg border border-slate-600 bg-slate-100 px-3 py-3 text-slate-950 outline-none focus:ring-2 focus:ring-blue-500">
+                               class="h-10 w-full rounded-lg border border-slate-600 bg-slate-100 px-3 text-sm text-slate-950 outline-none placeholder:text-xs placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500">
                     </div>
-                    <button type="submit" class="w-full rounded-lg border border-sky-400 bg-gradient-to-r from-blue-600 to-sky-600 px-4 py-4 font-bold text-white transition hover:brightness-110">Sign In Securely</button>
+                    <button type="submit" class="h-11 w-full rounded-lg border border-sky-400 bg-gradient-to-r from-blue-600 to-sky-600 px-4 text-sm font-semibold text-white transition hover:brightness-110">Sign In Securely</button>
                 </form>
             </section>
 
             <section class="auth-panel" data-panel="add-user" hidden>
                 <form id="add-user-form" class="space-y-4">
                     <div>
-                        <label for="new-username" class="mb-2 block text-xs font-bold text-slate-200">New username</label>
+                        <label for="new-username" class="mb-2 block text-xs font-medium text-slate-300">New username</label>
                         <input id="new-username" name="username" type="text" required minlength="3" maxlength="40" autocomplete="off" placeholder="Choose a username"
-                               class="w-full rounded-lg border border-slate-600 bg-slate-100 px-3 py-3 text-slate-950 outline-none focus:ring-2 focus:ring-blue-500">
+                               class="h-10 w-full rounded-lg border border-slate-600 bg-slate-100 px-3 text-sm text-slate-950 outline-none placeholder:text-xs placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label for="new-password" class="mb-2 block text-xs font-bold text-slate-200">New password</label>
+                        <label for="new-password" class="mb-2 block text-xs font-medium text-slate-300">New password</label>
                         <input id="new-password" name="password" type="password" required minlength="10" autocomplete="new-password" placeholder="At least 10 characters"
-                               class="w-full rounded-lg border border-slate-600 bg-slate-100 px-3 py-3 text-slate-950 outline-none focus:ring-2 focus:ring-blue-500">
+                               class="h-10 w-full rounded-lg border border-slate-600 bg-slate-100 px-3 text-sm text-slate-950 outline-none placeholder:text-xs placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label for="master-passcode" class="mb-2 block text-xs font-bold text-slate-200">Master authorization passcode</label>
+                        <label for="master-passcode" class="mb-2 block text-xs font-medium text-slate-300">Master authorization passcode</label>
                         <input id="master-passcode" name="masterPasscode" type="password" required autocomplete="current-password" placeholder="Enter master passcode"
-                               class="w-full rounded-lg border border-slate-600 bg-slate-100 px-3 py-3 text-slate-950 outline-none focus:ring-2 focus:ring-blue-500">
+                               class="h-10 w-full rounded-lg border border-slate-600 bg-slate-100 px-3 text-sm text-slate-950 outline-none placeholder:text-xs placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500">
                     </div>
-                    <button type="submit" class="w-full rounded-lg border border-sky-400 bg-gradient-to-r from-blue-600 to-sky-600 px-4 py-4 font-bold text-white transition hover:brightness-110">Create User</button>
+                    <button type="submit" class="h-11 w-full rounded-lg border border-sky-400 bg-gradient-to-r from-blue-600 to-sky-600 px-4 text-sm font-semibold text-white transition hover:brightness-110">Create User</button>
                 </form>
             </section>
 
@@ -97,11 +100,11 @@
                 </div>
                 <form id="reset-users-form" class="space-y-4">
                     <div>
-                        <label for="reset-master-passcode" class="mb-2 block text-xs font-bold text-slate-200">Master authorization passcode</label>
+                        <label for="reset-master-passcode" class="mb-2 block text-xs font-medium text-slate-300">Master authorization passcode</label>
                         <input id="reset-master-passcode" name="masterPasscode" type="password" required autocomplete="current-password" placeholder="Enter master passcode"
-                               class="w-full rounded-lg border border-slate-600 bg-slate-100 px-3 py-3 text-slate-950 outline-none focus:ring-2 focus:ring-blue-500">
+                               class="h-10 w-full rounded-lg border border-slate-600 bg-slate-100 px-3 text-sm text-slate-950 outline-none placeholder:text-xs placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500">
                     </div>
-                    <button type="submit" class="w-full rounded-lg border border-red-500 bg-red-800 px-4 py-4 font-bold text-white transition hover:bg-red-700">Reset Users</button>
+                    <button type="submit" class="h-11 w-full rounded-lg border border-red-500 bg-red-800 px-4 text-sm font-semibold text-white transition hover:bg-red-700">Reset Users</button>
                 </form>
             </section>
 
