@@ -209,9 +209,13 @@
                         <tbody>
                             <tr>
                                 <td class="font-medium text-slate-200">Market Operating Price (MOP)</td>
-                                <td><label class="sr-only" for="mop">Market Operating Price</label><input id="mop" data-calc-input type="number" min="0" step="0.01" placeholder="Enter MOP" class="sheet-input"></td>
+                                <td>
+                                    <label class="sr-only" for="mop">Market Operating Price</label>
+                                    <input id="mop" data-calc-input type="number" min="0" step="0.01" placeholder="Enter MOP" class="sheet-input">
+                                    <span id="mop-tax-note" class="mt-1 block whitespace-nowrap text-[10px] text-slate-500">Pre-tax benchmark; GST added to entered base</span>
+                                </td>
                                 <td id="mop-display" class="whitespace-nowrap font-bold text-cyan-300">—</td>
-                                <td class="text-slate-500">Defaults to product base price</td>
+                                <td class="text-slate-500">Defaults to net MOP from product base price</td>
                             </tr>
                             <tr>
                                 <td class="font-medium text-slate-200">Stock Scheme (Scheme 1)</td>
@@ -371,6 +375,15 @@
             note.textContent = `${inclusive ? 'Includes' : 'Plus'} 18% GST · ${duration}`;
         }
 
+        function getNetMopFromBase() {
+            const baseValue = document.getElementById('base-price').value.trim();
+            if (baseValue === '' || !Number.isFinite(Number(baseValue))) return '';
+            const basePrice = Number(baseValue);
+            return document.getElementById('tax-mode').value === 'inclusive'
+                ? String(basePrice / (1 + GST_RATE))
+                : String(basePrice);
+        }
+
         function updateProfitBanner(elementId, valueId, value) {
             const banner = document.getElementById(elementId);
             const output = document.getElementById(valueId);
@@ -401,9 +414,9 @@
         function calculate() {
             const basePriceInput = document.getElementById('base-price');
             state.basePrices[state.selectedProduct] = basePriceInput.value;
-            const baseValue = basePriceInput.value.trim();
+            const netMop = getNetMopFromBase();
             if (state.mopFollowsBase) {
-                document.getElementById('mop').value = baseValue;
+                document.getElementById('mop').value = netMop;
             }
 
             const productionCost = [
@@ -423,6 +436,10 @@
             const stockPercent = readNumber('stock-percent');
             const rewardCost = readNumber('reward-cost');
             const activationPercent = readNumber('activation-percent');
+            const mopTaxNote = document.getElementById('mop-tax-note');
+            mopTaxNote.textContent = document.getElementById('tax-mode').value === 'inclusive'
+                ? 'Pre-tax benchmark; GST extracted from entered base'
+                : 'Pre-tax benchmark; GST added to entered base';
             const stockDeduction = mop * stockPercent / 100;
             const activationDeduction = mop * activationPercent / 100;
             const perKeyProfit = mop - stockDeduction - rewardCost - activationDeduction - productionCost;
@@ -439,10 +456,8 @@
             const volumeLabel = `${currencyFormatter.format(volume)} ${volume === 1 ? 'key' : 'keys'}`;
             document.getElementById('volume-display').textContent = volumeLabel;
 
-            const exclusiveMode = document.getElementById('tax-mode').value === 'exclusive';
-            const billingBeforeTax = mop * volume;
-            const billingExclusive = exclusiveMode ? billingBeforeTax : billingBeforeTax / (1 + GST_RATE);
-            const billingInclusive = exclusiveMode ? billingBeforeTax * (1 + GST_RATE) : billingBeforeTax;
+            const billingExclusive = mop * volume;
+            const billingInclusive = billingExclusive * (1 + GST_RATE);
             document.getElementById('billing-exclusive').textContent = mopIsSet ? formatCurrency(billingExclusive) : '—';
             document.getElementById('billing-inclusive').textContent = mopIsSet ? formatCurrency(billingInclusive) : '—';
             document.getElementById('total-stock-cost').textContent = mopIsSet ? formatCurrency(stockDeduction * volume) : '—';
@@ -495,6 +510,7 @@
             input.addEventListener('input', () => {
                 if (input.id === 'base-price') {
                     state.basePrices[state.selectedProduct] = input.value;
+                    state.mopFollowsBase = true;
                 } else if (input.id === 'mop') {
                     state.mopFollowsBase = false;
                 }
@@ -503,8 +519,14 @@
         });
 
         document.querySelectorAll('[data-calc-select]').forEach(select => {
-            select.addEventListener('input', calculate);
-            select.addEventListener('change', calculate);
+            const handleSelect = () => {
+                if (select.id === 'tax-mode') {
+                    state.mopFollowsBase = true;
+                }
+                calculate();
+            };
+            select.addEventListener('input', handleSelect);
+            select.addEventListener('change', handleSelect);
         });
         document.querySelectorAll('[data-product]').forEach(button => {
             button.addEventListener('click', () => selectProduct(button.dataset.product));
