@@ -46,8 +46,14 @@
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
         }
         .sheet-table { border-collapse: separate; border-spacing: 0; }
-        .sheet-table th, .sheet-table td { padding: 0.4rem 0.55rem; }
+        .sheet-table th, .sheet-table td { padding: 0.5rem 0.65rem; }
         .sheet-table tbody tr + tr td { border-top: 1px solid rgb(51 65 85 / 0.55); }
+        .sheet-table tbody tr:nth-child(even) { background: rgb(15 23 42 / 0.24); }
+        .sheet-table tbody tr:hover { background: rgb(51 65 85 / 0.22); }
+        .sheet-table td[id] {
+            background-color: rgb(15 23 42 / 0.55);
+            font-variant-numeric: tabular-nums;
+        }
         .sheet-scroll { contain: layout paint; }
         .sheet-input {
             width: 100%;
@@ -58,10 +64,19 @@
             padding: 0.35rem 0.5rem;
             color: #fcd34d;
             font-weight: 600;
+            transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+        }
+        .sheet-input:hover {
+            border-color: #475569;
+            background: #111c32;
         }
         .sheet-input:focus {
-            outline: 1px solid #3b82f6;
+            outline: none;
             border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgb(59 130 246 / 0.55);
+        }
+        .profit-state {
+            transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
         }
         @media print {
             body { background: #fff !important; color: #111827 !important; }
@@ -78,14 +93,14 @@
 <body class="min-h-screen bg-[#0b1329] font-sans text-slate-100 antialiased selection:bg-indigo-500 selection:text-white">
     <div id="app" class="flex min-h-screen flex-col">
         <header class="sticky top-0 z-40 border-b border-slate-800 bg-cyber-800/90 backdrop-blur-md no-print">
-            <div class="mx-auto flex w-full max-w-[100rem] flex-wrap items-center justify-between gap-x-4 gap-y-2 px-3 py-4 sm:px-5 lg:px-8">
+            <div class="mx-auto flex w-full max-w-[100rem] flex-wrap items-center justify-between gap-x-5 gap-y-3 px-3 py-4 sm:px-5 lg:px-8">
                 <div class="flex min-w-0 flex-wrap items-center gap-3">
                     <div class="flex h-20 w-48 shrink-0 items-center justify-center rounded-xl bg-white px-4 py-2">
                         <img src="images/logo.png" alt="Sentinel Genesis Technologies" class="h-16 max-w-full w-auto object-contain"
                              onerror="this.onerror=null; this.outerHTML='<i class=\'fa-solid fa-shield-halved text-indigo-400 text-2xl\'></i>'">
                     </div>
                     <div class="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
-                        <span class="hidden text-base font-bold tracking-tight text-white md:inline xl:text-xl">Sentinel Genesis - Scheme Calculator</span>
+                        <span class="min-w-0 text-sm font-bold tracking-tight text-white sm:text-base xl:text-xl">Sentinel Genesis - Scheme Calculator</span>
                         <span class="w-fit rounded-full border border-indigo-700/50 bg-indigo-950/60 px-3 py-1 text-xs font-semibold uppercase text-indigo-300">Scheme Portal</span>
                     </div>
                 </div>
@@ -107,9 +122,9 @@
             </div>
         </header>
 
-        <div id="workspace-shell" class="mx-auto flex w-full max-w-[100rem] flex-1 flex-col gap-3 px-3 py-4 sm:px-5 lg:flex-row lg:px-8">
-            <aside id="variant-sidebar" class="no-print w-full shrink-0 rounded-xl border border-slate-800 bg-slate-950/80 p-3 lg:w-64" aria-label="Variant library">
-                <div class="mb-3 flex items-center justify-between gap-2">
+        <div id="workspace-shell" class="mx-auto flex w-full max-w-[100rem] flex-1 flex-col gap-4 px-3 py-4 sm:px-5 lg:flex-row lg:px-8">
+            <aside id="variant-sidebar" class="no-print max-h-[calc(100vh-200px)] w-full shrink-0 overflow-y-auto rounded-2xl border border-slate-800 bg-slate-950/80 p-4 shadow-xl shadow-black/10 lg:sticky lg:top-28 lg:w-64" aria-label="Variant library">
+                <div class="mb-4 flex items-center justify-between gap-2">
                     <h2 class="text-xs font-bold uppercase tracking-wide text-indigo-300">Variant Library</h2>
                     <button id="add-variant" type="button" class="rounded-md border border-indigo-700/60 bg-indigo-950/60 px-2 py-1 text-[10px] font-semibold text-indigo-200 hover:bg-indigo-900/60">＋ Add New</button>
                 </div>
@@ -122,15 +137,15 @@
                 </div>
             </aside>
 
-        <main id="calculator-workspace" class="min-w-0 flex-1 space-y-3">
+        <main id="calculator-workspace" class="min-w-0 flex-1 space-y-4">
             <div class="print-only mb-3 hidden border-b border-slate-300 pb-2">
                 <h1 class="text-xl font-bold text-black">Sentinel Genesis Scheme Calculator</h1>
                 <p class="text-xs text-slate-600">Generated <span id="print-date"></span></p>
             </div>
 
-            <section class="flex flex-wrap items-end justify-between gap-2">
+            <section class="flex flex-wrap items-end justify-between gap-3">
                 <div>
-                    <h1 class="text-xl font-bold tracking-tight text-white">Scheme Calculator</h1>
+                    <h1 class="text-xl font-bold tracking-tight text-white sm:text-2xl">Scheme Calculator</h1>
                     <p class="text-xs text-slate-400">Spreadsheet-style per-key scheme and profitability model</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2 no-print">
@@ -141,7 +156,7 @@
                     </button>
                 </div>
             </section>
-            <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex flex-wrap items-center justify-between gap-3">
                 <nav class="flex flex-wrap gap-1 rounded-lg border border-slate-800 bg-slate-900/70 p-1 no-print" aria-label="Product selection">
                     <button type="button" data-product="AV" aria-pressed="false" class="product-tab rounded-md border border-transparent px-3 py-1.5 text-xs font-semibold text-slate-400 transition">Antivirus (AV)</button>
                     <button type="button" data-product="IS" aria-pressed="false" class="product-tab rounded-md border border-transparent px-3 py-1.5 text-xs font-semibold text-slate-400 transition">Internet Security (IS)</button>
@@ -154,11 +169,11 @@
                 </div>
             </div>
 
-            <section class="cyber-card overflow-hidden rounded-xl">
-                <div class="border-b border-slate-700 px-3 py-2">
+            <section class="cyber-card overflow-hidden rounded-2xl">
+                <div class="border-b border-slate-700 px-4 py-3">
                     <h2 class="text-xs font-bold uppercase tracking-wide text-indigo-300">Product Configuration</h2>
                 </div>
-                <div class="grid grid-cols-1 gap-2 p-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div class="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
                     <label class="text-[11px] font-medium text-slate-400">
                         Base Price (₹)
                         <input id="base-price" data-calc-input type="number" min="0" step="0.01" inputmode="decimal" placeholder="Enter base price" class="sheet-input mt-1 block">
@@ -186,8 +201,8 @@
                 </div>
             </section>
 
-            <section class="cyber-card overflow-hidden rounded-xl">
-                <div class="flex items-center justify-between border-b border-slate-700 px-3 py-2">
+            <section class="cyber-card overflow-hidden rounded-2xl">
+                <div class="flex items-center justify-between gap-3 border-b border-slate-700 px-4 py-3">
                     <h2 class="text-xs font-bold uppercase tracking-wide text-cyan-300">1. Company Production Cost <span class="normal-case font-medium text-slate-400">(per key)</span></h2>
                     <span class="text-[10px] text-slate-500">All cost inputs are editable</span>
                 </div>
@@ -219,8 +234,8 @@
                 </div>
             </section>
 
-            <section class="cyber-card overflow-hidden rounded-xl">
-                <div class="border-b border-slate-700 px-3 py-2">
+            <section class="cyber-card overflow-hidden rounded-2xl">
+                <div class="border-b border-slate-700 px-4 py-3">
                     <h2 class="text-xs font-bold uppercase tracking-wide text-indigo-300">2. Tier 3 (T3) Partner Scheme &amp; Profit Engine <span class="normal-case font-medium text-slate-400">(per key)</span></h2>
                 </div>
                 <div class="sheet-scroll overflow-x-auto">
@@ -271,14 +286,14 @@
                         </tbody>
                     </table>
                 </div>
-                <div id="per-key-profit-banner" class="profit-state m-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2">
+                <div id="per-key-profit-banner" class="profit-state m-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-700 bg-slate-900/70 px-4 py-3">
                     <span class="text-xs font-semibold text-slate-200">Per-Key Net Profit / Loss</span>
                     <strong id="per-key-profit" class="text-sm font-extrabold">—</strong>
                 </div>
             </section>
 
-            <section class="cyber-card overflow-hidden rounded-xl">
-                <div class="border-b border-slate-700 px-3 py-2">
+            <section class="cyber-card overflow-hidden rounded-2xl">
+                <div class="border-b border-slate-700 px-4 py-3">
                     <h2 class="text-xs font-bold uppercase tracking-wide text-emerald-300">3. Scheme Volume &amp; Overall Profitability</h2>
                 </div>
                 <div class="sheet-scroll overflow-x-auto">
@@ -324,7 +339,7 @@
                         </tbody>
                     </table>
                 </div>
-                <div id="overall-profit-banner" class="profit-state m-2 flex flex-col items-center justify-between gap-1 rounded-lg border border-slate-700 bg-slate-900/70 px-4 py-3 text-center sm:flex-row sm:text-left">
+                <div id="overall-profit-banner" class="profit-state m-3 flex flex-col items-center justify-between gap-2 rounded-xl border border-slate-700 bg-slate-900/70 px-5 py-4 text-center sm:flex-row sm:text-left">
                     <div>
                         <span class="block text-xs font-semibold text-slate-200">Final Overall Net Profit / Loss</span>
                         <span id="overall-profit-note" class="text-[10px] text-slate-500">Scheme volume × per-key net profit/loss</span>
@@ -332,8 +347,8 @@
                     <strong id="overall-profit" class="text-xl font-extrabold">—</strong>
                 </div>
             </section>
-            <section class="cyber-card overflow-hidden rounded-xl">
-                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-700 px-3 py-2">
+            <section class="cyber-card overflow-hidden rounded-2xl">
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-700 px-4 py-3">
                     <div>
                         <h2 class="text-xs font-bold uppercase tracking-wide text-indigo-300">Market Price List</h2>
                         <p class="text-[10px] text-slate-500">Tier prices are pre-GST: T2 = MOP − T2 margin; T1 = T2 − T1 margin.</p>
@@ -367,7 +382,7 @@
         </div>
 
         <footer class="mt-auto border-t border-slate-800 bg-cyber-800 py-3 no-print">
-            <div class="mx-auto max-w-7xl px-4 text-center text-[10px] text-slate-500">
+            <div class="mx-auto w-full max-w-[100rem] px-3 text-center text-[10px] text-slate-500 sm:px-5 lg:px-8">
                 Sentinel Genesis Technologies Pvt Ltd &bull; Scheme &amp; Pricing Engine
             </div>
         </footer>
@@ -578,8 +593,23 @@
                 details.open = variants.length > 0;
                 details.className = 'overflow-hidden rounded-lg border border-slate-800 bg-slate-900/60';
                 const summary = document.createElement('summary');
-                summary.className = 'cursor-pointer list-none px-2.5 py-2 text-[11px] font-semibold text-slate-300 hover:bg-slate-800/70';
-                summary.textContent = `${group.label} (${variants.length})`;
+                summary.className = 'flex cursor-pointer list-none items-center justify-between gap-2 px-2.5 py-2 text-[11px] font-semibold text-slate-300 hover:bg-slate-800/70';
+                const label = document.createElement('span');
+                label.className = 'min-w-0 truncate';
+                label.textContent = group.label;
+                const badges = document.createElement('span');
+                badges.className = 'flex shrink-0 items-center gap-1';
+                const count = document.createElement('span');
+                count.className = 'rounded-full border border-slate-700 bg-slate-950/80 px-1.5 py-0.5 text-[9px] tabular-nums text-slate-400';
+                count.textContent = String(variants.length);
+                badges.append(count);
+                if (variants.some(variant => variant.id === state.activeVariantId)) {
+                    const active = document.createElement('span');
+                    active.className = 'rounded-full border border-indigo-700/60 bg-indigo-950/70 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-indigo-300';
+                    active.textContent = 'Active';
+                    badges.append(active);
+                }
+                summary.append(label, badges);
                 details.append(summary);
                 const list = document.createElement('div');
                 list.className = 'space-y-1 p-1.5';
@@ -593,8 +623,8 @@
                     const button = document.createElement('button');
                     button.type = 'button';
                     button.className = variant.id === state.activeVariantId
-                        ? 'w-full rounded-md border border-indigo-500 bg-indigo-950/60 px-2 py-1.5 text-left text-[10px] font-semibold text-indigo-100 shadow-md shadow-indigo-950/40'
-                        : 'w-full rounded-md border border-transparent px-2 py-1.5 text-left text-[10px] text-slate-400 hover:border-slate-700 hover:bg-slate-800/70 hover:text-slate-100';
+                        ? 'w-full rounded-md border-2 border-indigo-400 bg-indigo-950/70 px-2 py-1.5 text-left text-[10px] font-semibold text-indigo-100 shadow-lg shadow-indigo-950/60 ring-1 ring-indigo-500/40'
+                        : 'w-full rounded-md border border-transparent px-2 py-1.5 text-left text-[10px] text-slate-400 transition hover:border-slate-700 hover:bg-slate-800/70 hover:text-slate-100';
                     const title = document.createElement('span');
                     title.className = 'block truncate';
                     title.textContent = variant.title;
@@ -700,20 +730,22 @@
             banner.classList.remove(
                 'border-emerald-800', 'bg-emerald-950/40', 'text-emerald-400',
                 'border-rose-800', 'bg-rose-950/40', 'text-rose-400',
-                'border-slate-700', 'bg-slate-900/70', 'text-slate-300'
+                'border-emerald-800/60', 'border-rose-800/60',
+                'border-slate-700', 'bg-slate-900/70', 'text-slate-300',
+                'shadow-lg', 'shadow-emerald-950/30', 'shadow-rose-950/30', 'shadow-none'
             );
             if (value > 0) {
-                banner.classList.add('border-emerald-800', 'bg-emerald-950/40', 'text-emerald-400');
+                banner.classList.add('border-emerald-800/60', 'bg-emerald-950/40', 'text-emerald-400', 'shadow-lg', 'shadow-emerald-950/30');
                 output.className = elementId === 'overall-profit-banner'
                     ? 'text-xl font-extrabold text-emerald-400'
                     : 'text-sm font-extrabold text-emerald-400';
             } else if (value < 0) {
-                banner.classList.add('border-rose-800', 'bg-rose-950/40', 'text-rose-400');
+                banner.classList.add('border-rose-800/60', 'bg-rose-950/40', 'text-rose-400', 'shadow-lg', 'shadow-rose-950/30');
                 output.className = elementId === 'overall-profit-banner'
                     ? 'text-xl font-extrabold text-rose-400'
                     : 'text-sm font-extrabold text-rose-400';
             } else {
-                banner.classList.add('border-slate-700', 'bg-slate-900/70', 'text-slate-300');
+                banner.classList.add('border-slate-700', 'bg-slate-900/70', 'text-slate-300', 'shadow-none');
                 output.className = elementId === 'overall-profit-banner'
                     ? 'text-xl font-extrabold text-slate-300'
                     : 'text-sm font-extrabold text-slate-300';
