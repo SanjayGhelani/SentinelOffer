@@ -1,11 +1,11 @@
-# Sentinel Genesis Offer
+# Sentinel Genesis Scheme Calculator
 
-## Wasmer Static Hosting
+## Static two-page application
 
-This project is a single-file static web application. Set the Wasmer Static Site root to the repository root and deploy `wasmer.toml`; `index.html` is served as the application entry point. No PHP runtime, build step, or server-side authentication service is required.
+- `index.html` is the login and user-management hub.
+- `dashboard.html` contains only the scheme calculator and financial dashboard. It checks `sessionStorage` for `sentinel_auth === "true"` and redirects unauthenticated visitors to `index.html`.
+- `wasmer.toml` serves the repository root as a static site, so `index.html` is the default entry page. No PHP runtime or build process is required.
 
-The login screen, account editor, and calculator are implemented in `index.html`. The initial `Admin`, `Sanjay`, and `Pratyush` accounts and added users are stored as plaintext in browser `localStorage`. The master passcode is embedded in the same public file. User changes are local to the browser/device that made them and do not synchronize to other visitors.
+The login page hardcodes the protected `Admin` account and seeds the `Sanjay` and `Pratyush` secondary accounts into browser `localStorage` on first use. The Admin credentials are not stored in or changed through local storage. **Reset Users** clears every secondary account, leaving only the hardcoded Admin account available. A successful sign-in stores `sentinel_auth = "true"` and `sentinel_username` in `sessionStorage`. Dashboard logout clears session storage and returns to the login page.
 
-**Security warning:** this client-side login is a visual convenience only and must not protect sensitive information. Anyone can view the credentials and master passcode in the downloaded page source, edit local storage, or bypass the JavaScript check. Do not deploy this version for confidential, regulated, or otherwise restricted data. Use server-side authentication to enforce access control.
-
-Users can be reset to the three built-in accounts with the master passcode from the **Reset Users** tab. This clears users added to that browser only.
+**Security warning:** this is client-side convenience, not secure access control. Default passwords, added user passwords, and the master passcode are available in the public JavaScript and browser storage. The session flag can also be changed or bypassed. Do not use this static version to protect confidential information.

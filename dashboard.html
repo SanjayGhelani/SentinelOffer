@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentinel Genesis - Scheme Calculator</title>
+    <script>
+        if (sessionStorage.getItem("sentinel_auth") !== "true") {
+            window.location.href = "index.html";
+        }
+    </script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        cyber: {
+                            900: '#0b1329',
+                            800: '#0f172a',
+                            700: '#1e293b',
+                            600: '#334155',
+                            accent: '#6366f1',
+                            cyan: '#06b6d4',
+                            emerald: '#10b981'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Scrollbar for Sleek Dark Theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6366f1;
+        }
+
+        /* Glassmorphism Subtle Glow Effects */
+        .cyber-glass {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .cyber-card {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Print Styles for Exporting Clean PDF */
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-only {
+                display: block !important;
+            }
+            .cyber-card, .cyber-glass {
+                background: #ffffff !important;
+                color: #000000 !important;
+                border: 1px solid #ccc !important;
+                box-shadow: none !important;
+            }
+            input, select {
+                border: none !important;
+                background: transparent !important;
+                color: #000000 !important;
+                appearance: none;
+            }
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+            }
+            th, td {
+                border: 1px solid #ddd !important;
+                padding: 6px !important;
+                color: #000 !important;
+                font-size: 10px !important;
+            }
+            .gradient-divider {
+                border-top: 2px solid #333 !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-[#0b1329] text-slate-100 font-sans min-h-screen antialiased flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+    <!-- TOP NOTIFICATION ALERT SYSTEM -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 no-print"></div>
+
+    <!-- MAIN APP CONTAINER -->
+    <div id="app" class="flex-grow flex flex-col">
+
+        <!-- ========================================== -->
+        <!-- MAIN DASHBOARD & CALCULATOR INTERFACE     -->
+        <!-- ========================================== -->
+        <div id="dashboard-screen" class="flex flex-col min-h-screen">
+            
+            <!-- NAVBAR -->
+            <header class="bg-cyber-800/90 border-b border-slate-800 sticky top-0 z-40 backdrop-blur-md no-print">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <img src="images/logo.png" alt="Logo" class="h-8 w-auto object-contain" 
+                             onerror="this.onerror=null; this.outerHTML='<i class=\'fa-solid fa-shield-halved text-indigo-400 text-2xl\'></i>'">
+                        <span class="font-bold tracking-tight text-white hidden sm:inline text-lg">Sentinel Genesis - Scheme Calculator</span>
+                        <span class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full">Scheme Portal</span>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-2 text-xs bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-700/80">
+                            <i class="fa-solid fa-user-circle text-indigo-400"></i>
+                            <span class="text-slate-300 font-medium" id="current-user-display">User</span>
+                        </div>
+                        
+                        <button onclick="exportToPDF()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-600 transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-pdf text-red-400"></i>
+                            <span>Export PDF</span>
+                        </button>
+
+                        <button type="button" onclick="handleLogout()" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-semibold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-right-from-bracket"></i>
+                                <span class="hidden sm:inline">Logout</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- DASHBOARD CONTENT AREA -->
+            <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+                <!-- PRINT WATERMARK HEADER -->
+                <div class="hidden print-only mb-6 border-b pb-4">
+                    <h1 class="text-2xl font-bold text-black">Sentinel Genesis Technologies Pvt Ltd</h1>
+                    <p class="text-sm text-gray-600">Official Product Scheme & Tier Pricing Calculation Sheet</p>
+                    <p class="text-xs text-gray-500 mt-1">Generated on: <span id="print-date"></span></p>
+                </div>
+
+                <!-- SECTION 3 REQUIREMENT: MAIN HEADER & DESCRIPTION WITH GRADIENT DIVIDER -->
+                <div class="space-y-2">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                        <div>
+                            <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+                                <i class="fa-solid fa-calculator text-indigo-500 no-print"></i>
+                                Scheme Calculator
+                            </h1>
+                            <p class="text-sm text-slate-400 mt-1">
+                                Interactive Partner Scheme, Margin &amp; Reward Modeling Platform
+                            </p>
+                        </div>
+
+                        <div class="flex items-center gap-2 no-print">
+                            <button onclick="resetToDefaults()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-lg border border-slate-700 transition flex items-center gap-1">
+                                <i class="fa-solid fa-rotate-left"></i>
+                                <span>Reset Defaults</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- VISUAL DIVIDER LINE (GRADIENT GLOW EFFECT) -->
+                    <div class="gradient-divider h-0.5 w-full bg-gradient-to-r from-indigo-500 via-cyan-500 to-emerald-500 rounded-full opacity-80 my-4"></div>
+                </div>
+
+                <!-- PRODUCT SELECTION & BASELINE CONTROLS -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- PRODUCT TOGGLES CARD -->
+                    <div class="cyber-card p-5 rounded-2xl lg:col-span-2">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-sm font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-2">
+                                <i class="fa-solid fa-box-archive"></i>
+                                1. Select Product & Base Price
+                            </h2>
+                            <span class="text-xs text-slate-400">GST: 18% Standard</span>
+                        </div>
+
+                        <!-- PRODUCT RADIO TAB BUTTONS -->
+                        <div class="grid grid-cols-3 gap-3 mb-5 no-print">
+                            <button type="button" onclick="selectProduct('AV')" id="tab-AV" class="p-3 rounded-xl border text-center transition flex flex-col items-center gap-1">
+                                <i class="fa-solid fa-shield-virus text-lg"></i>
+                                <span class="font-bold text-sm">Antivirus (AV)</span>
+                                <span class="text-xs opacity-75" id="tab-price-AV">₹300</span>
+                            </button>
+                            <button type="button" onclick="selectProduct('IS')" id="tab-IS" class="p-3 rounded-xl border text-center transition flex flex-col items-center gap-1">
+                                <i class="fa-solid fa-network-wired text-lg"></i>
+                                <span class="font-bold text-sm">Internet Security (IS)</span>
+                                <span class="text-xs opacity-75" id="tab-price-IS">₹400</span>
+                            </button>
+                            <button type="button" onclick="selectProduct('TS')" id="tab-TS" class="p-3 rounded-xl border text-center transition flex flex-col items-center gap-1">
+                                <i class="fa-solid fa-user-shield text-lg"></i>
+                                <span class="font-bold text-sm">Total Security (TS)</span>
+                                <span class="text-xs opacity-75" id="tab-price-TS">₹500</span>
+                            </button>
+                        </div>
+
+                        <!-- EDITABLE BASELINE INPUTS -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1 font-medium">Base Price / Key (₹)</label>
+                                <input type="number" id="input-base-price" oninput="updateBasePrice(this.value)" class="w-full bg-slate-800 text-white font-bold text-base px-3 py-2 rounded-lg border border-slate-700 focus:outline-none focus:border-indigo-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1 font-medium">Key Validity / Type</label>
+                                <input type="text" id="input-key-duration" value="1 Year / 1 PC" onchange="updateKeyDuration(this.value)" class="w-full bg-slate-800 text-white text-sm px-3 py-2 rounded-lg border border-slate-700 focus:outline-none focus:border-indigo-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1 font-medium">Tax Rate (GST %)</label>
+                                <input type="number" id="input-tax-rate" value="18" oninput="updateTaxRate(this.value)" class="w-full bg-slate-800 text-white text-sm px-3 py-2 rounded-lg border border-slate-700 focus:outline-none focus:border-indigo-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PRODUCTION COST & EXPENSE INPUT CARD -->
+                    <div class="cyber-card p-5 rounded-2xl">
+                        <h2 class="text-sm font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-2 mb-4">
+                            <i class="fa-solid fa-industry"></i>
+                            Company Production Cost
+                        </h2>
+
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">Key Production Cost (₹/key)</label>
+                                <input type="number" id="input-prod-cost" value="120" oninput="updateProdCost(this.value)" class="w-full bg-slate-900 text-slate-100 font-semibold text-sm px-3 py-2 rounded-lg border border-slate-700 focus:outline-none focus:border-cyan-500">
+                                <p class="text-[10px] text-slate-500 mt-1">Basic software manufacturing & key gen expense</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">Box Making & Handling (₹/key)</label>
+                                <input type="number" id="input-handling-cost" value="5" oninput="updateHandlingCost(this.value)" class="w-full bg-slate-900 text-slate-100 font-semibold text-sm px-3 py-2 rounded-lg border border-slate-700 focus:outline-none focus:border-cyan-500">
+                                <p class="text-[10px] text-slate-500 mt-1">Packaging, physical box & handling charges</p>
+                            </div>
+
+                            <div class="pt-2 border-t border-slate-800 flex justify-between items-center text-xs">
+                                <span class="text-slate-400 font-medium">Total Base Expense:</span>
+                                <span class="text-cyan-400 font-bold text-sm" id="display-total-base-cost">₹125.00 / key</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- DUAL-INPUT TIER MARGIN ENGINE (T1, T2, T3) -->
+                <div class="cyber-card p-5 rounded-2xl">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                        <div>
+                            <h2 class="text-sm font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
+                                <i class="fa-solid fa-diagram-project"></i>
+                                2. Tier Margin Engine (Bidirectional Dual-Inputs)
+                            </h2>
+                            <p class="text-xs text-slate-400">Edit percentage (%) or monetary amount (₹) to automatically compute partner prices and margins.</p>
+                        </div>
+                        <span class="text-[11px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-md font-mono">
+                            Base: <span id="tier-base-ref">₹500</span>
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        
+                        <!-- TIER 1 -->
+                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-xs font-bold uppercase tracking-wider text-indigo-400">Tier 1 (T1 Partner)</span>
+                                <span class="text-[10px] text-slate-400 font-mono" id="t1-effective-price">Cost: ₹450</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Margin %</label>
+                                    <input type="number" id="t1-percent" value="10" step="0.1" oninput="onTierChange('T1', 'percent', this.value)" class="w-full bg-slate-800 text-white font-semibold text-sm px-2.5 py-2 rounded-lg border border-slate-700 focus:border-indigo-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Margin Value (₹)</label>
+                                    <input type="number" id="t1-amount" value="50" step="1" oninput="onTierChange('T1', 'amount', this.value)" class="w-full bg-slate-800 text-white font-semibold text-sm px-2.5 py-2 rounded-lg border border-slate-700 focus:border-indigo-500 focus:outline-none">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TIER 2 -->
+                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-xs font-bold uppercase tracking-wider text-cyan-400">Tier 2 (T2 Partner)</span>
+                                <span class="text-[10px] text-slate-400 font-mono" id="t2-effective-price">Cost: ₹425</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Margin %</label>
+                                    <input type="number" id="t2-percent" value="15" step="0.1" oninput="onTierChange('T2', 'percent', this.value)" class="w-full bg-slate-800 text-white font-semibold text-sm px-2.5 py-2 rounded-lg border border-slate-700 focus:border-cyan-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Margin Value (₹)</label>
+                                    <input type="number" id="t2-amount" value="75" step="1" oninput="onTierChange('T2', 'amount', this.value)" class="w-full bg-slate-800 text-white font-semibold text-sm px-2.5 py-2 rounded-lg border border-slate-700 focus:border-cyan-500 focus:outline-none">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TIER 3 -->
+                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Tier 3 (T3 Partner)</span>
+                                <span class="text-[10px] text-slate-400 font-mono" id="t3-effective-price">Cost: ₹400</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Margin %</label>
+                                    <input type="number" id="t3-percent" value="20" step="0.1" oninput="onTierChange('T3', 'percent', this.value)" class="w-full bg-slate-800 text-white font-semibold text-sm px-2.5 py-2 rounded-lg border border-slate-700 focus:border-emerald-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Margin Value (₹)</label>
+                                    <input type="number" id="t3-amount" value="100" step="1" oninput="onTierChange('T3', 'amount', this.value)" class="w-full bg-slate-800 text-white font-semibold text-sm px-2.5 py-2 rounded-lg border border-slate-700 focus:border-emerald-500 focus:outline-none">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+
+                <!-- DYNAMIC SCHEME SLABS MATRIX TABLE -->
+                <div class="cyber-card p-5 rounded-2xl overflow-hidden">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                        <div>
+                            <h2 class="text-sm font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-2">
+                                <i class="fa-solid fa-table-list"></i>
+                                3. Scheme Slabs Matrix (Decoded Logic)
+                            </h2>
+                            <p class="text-xs text-slate-400">Stock valuation, 18% GST tax calculation, stock offer incentives, and reward activations.</p>
+                        </div>
+                        <button onclick="addSchemeRow()" class="no-print bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 self-start sm:self-auto shadow-md">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Add Custom Scheme Row</span>
+                        </button>
+                    </div>
+
+                    <!-- TABLE CONTAINER -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-900/90 text-slate-400 uppercase tracking-wider border-b border-slate-800 font-semibold">
+                                    <th class="p-3">Box Qty</th>
+                                    <th class="p-3">Keys / Box</th>
+                                    <th class="p-3">Total Keys</th>
+                                    <th class="p-3">Stock Value (₹)</th>
+                                    <th class="p-3">GST (18%)</th>
+                                    <th class="p-3">Stock Offer %</th>
+                                    <th class="p-3">Offer Value (₹)</th>
+                                    <th class="p-3">Free Keys</th>
+                                    <th class="p-3">Reward Cash (₹)</th>
+                                    <th class="p-3 no-print text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="scheme-table-body" class="divide-y divide-slate-800/60 font-mono">
+                                <!-- Dynamic JS Injection -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+                <!-- EXPENSE & PROFITABILITY ANALYTICS CARD -->
+                <div class="cyber-card p-5 rounded-2xl">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2 mb-4">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        4. Unit Economics & Profitability Analytics
+                    </h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        
+                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+                            <span class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Production Allocation</span>
+                            <div class="text-xl font-extrabold text-white" id="summary-prod-val">₹120.00</div>
+                            <span class="text-[10px] text-slate-500 mt-1 block" id="summary-prod-pct">24% of Base Price</span>
+                        </div>
+
+                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+                            <span class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Max Stock Offer Share</span>
+                            <div class="text-xl font-extrabold text-indigo-400" id="summary-offer-val">₹165.00</div>
+                            <span class="text-[10px] text-slate-500 mt-1 block" id="summary-offer-pct">33% of Stock Value</span>
+                        </div>
+
+                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+                            <span class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Free Keys + Cash Reward / Key</span>
+                            <div class="text-xl font-extrabold text-cyan-400" id="summary-reward-val">₹30.00</div>
+                            <span class="text-[10px] text-slate-500 mt-1 block">Worst-case editable slab allocation</span>
+                        </div>
+
+                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+                            <span class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Net Company Revenue / Key</span>
+                            <div class="text-xl font-extrabold text-emerald-400" id="summary-net-profit">₹180.00</div>
+                            <span class="text-[10px] text-slate-500 mt-1 block" id="summary-profit-margin">36% Net Margin</span>
+                        </div>
+
+                    </div>
+
+                    <!-- BATCH CALCULATION BREAKDOWN (PER 300 KEYS) -->
+                    <div class="mt-4 p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                        <div>
+                            <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Master Scheme Batch (300 Key Standard Batch)</h3>
+                            <p class="text-xs text-slate-400">Total batch stock value: <span id="batch-stock-value" class="text-white font-bold font-mono">₹1,50,000</span> | Max Stock Offer Value: <span id="batch-offer-value" class="text-indigo-300 font-bold font-mono">₹49,500</span></p>
+                        </div>
+                        <div class="text-left md:text-right">
+                            <span class="text-[10px] uppercase text-slate-400 block">Total Batch Net Revenue</span>
+                            <span id="batch-net-profit" class="text-lg font-bold text-emerald-400 font-mono">₹54,000</span>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+
+            <!-- FOOTER -->
+            <footer class="bg-cyber-800 border-t border-slate-800 py-4 mt-auto no-print">
+                <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
+                    Sentinel Genesis Technologies Pvt Ltd &bull; Scheme & Pricing Engine &bull; Confidential & Proprietary
+                </div>
+            </footer>
+        </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- JAVASCRIPT REVENUE & STATE LOGIC           -->
+    <!-- ========================================== -->
+    <script>
+        // --- 1. GLOBAL REACTIVE STATE ---
+        let appState = {
+            selectedProduct: 'TS', // Default product
+            products: {
+                AV: { name: 'Antivirus (AV)', basePrice: 300 },
+                IS: { name: 'Internet Security (IS)', basePrice: 400 },
+                TS: { name: 'Total Security (TS)', basePrice: 500 }
+            },
+            keyDuration: '1 Year / 1 PC',
+            taxRate: 18,
+            productionCost: 120,
+            handlingCost: 5,
+            tiers: {
+                T1: { percent: 10, amount: 50 },
+                T2: { percent: 15, amount: 75 },
+                T3: { percent: 20, amount: 100 }
+            },
+            // Default Scheme Slabs decoded from Excel screenshot
+            slabs: [
+                { id: 1, boxQty: 1,  keysPerBox: 10,  stockOfferPercent: 20, rewardFreeKeys: 2,  reward2: 1000 },
+                { id: 2, boxQty: 2,  keysPerBox: 20,  stockOfferPercent: 20, rewardFreeKeys: 4,  reward2: 2000 },
+                { id: 3, boxQty: 5,  keysPerBox: 50,  stockOfferPercent: 20, rewardFreeKeys: 10, reward2: 5000 },
+                { id: 4, boxQty: 10, keysPerBox: 100, stockOfferPercent: 20, rewardFreeKeys: 20, reward2: 10000 },
+                { id: 5, boxQty: 15, keysPerBox: 150, stockOfferPercent: 20, rewardFreeKeys: 30, reward2: 15000 },
+                { id: 6, boxQty: 20, keysPerBox: 200, stockOfferPercent: 20, rewardFreeKeys: 40, reward2: 20000 },
+                { id: 7, boxQty: 30, keysPerBox: 300, stockOfferPercent: 33, rewardFreeKeys: 60, reward2: 30000 }
+            ]
+        };
+
+        // --- 2. DASHBOARD INITIALIZATION ---
+        window.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('current-user-display').textContent = sessionStorage.getItem('sentinel_username') || 'Authenticated User';
+            renderProductTabs();
+            syncTierInputs();
+            renderTable();
+            recalculateAnalytics();
+        });
+
+        function handleLogout() {
+            sessionStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        // --- 3. PRODUCT & BASELINE CONTROLS ---
+        function selectProduct(prodCode) {
+            appState.selectedProduct = prodCode;
+            renderProductTabs();
+            
+            // Recalculate tier amounts based on new product base price
+            const basePrice = appState.products[prodCode].basePrice;
+            ['T1', 'T2', 'T3'].forEach(tier => {
+                appState.tiers[tier].amount = (basePrice * (appState.tiers[tier].percent / 100));
+            });
+            
+            syncTierInputs();
+            renderTable();
+            recalculateAnalytics();
+        }
+
+        function renderProductTabs() {
+            const active = appState.selectedProduct;
+            
+            ['AV', 'IS', 'TS'].forEach(p => {
+                const btn = document.getElementById(`tab-${p}`);
+                const priceSpan = document.getElementById(`tab-price-${p}`);
+                priceSpan.innerText = `₹${appState.products[p].basePrice}`;
+
+                if (p === active) {
+                    btn.className = "p-3 rounded-xl border border-indigo-500 bg-indigo-600/20 text-indigo-300 text-center transition flex flex-col items-center gap-1 font-bold shadow-lg shadow-indigo-500/10";
+                } else {
+                    btn.className = "p-3 rounded-xl border border-slate-700 bg-slate-900/60 text-slate-400 hover:text-white hover:border-slate-600 text-center transition flex flex-col items-center gap-1 font-medium";
+                }
+            });
+
+            document.getElementById('input-base-price').value = appState.products[active].basePrice;
+            document.getElementById('tier-base-ref').innerText = `₹${appState.products[active].basePrice}`;
+        }
+
+        function updateBasePrice(val) {
+            const num = parseFloat(val) || 0;
+            appState.products[appState.selectedProduct].basePrice = num;
+            document.getElementById(`tab-price-${appState.selectedProduct}`).innerText = `₹${num}`;
+            document.getElementById('tier-base-ref').innerText = `₹${num}`;
+            
+            // Re-sync Tier Margins
+            ['T1', 'T2', 'T3'].forEach(tier => {
+                appState.tiers[tier].amount = (num * (appState.tiers[tier].percent / 100));
+            });
+
+            syncTierInputs();
+            renderTable();
+            recalculateAnalytics();
+        }
+
+        function updateKeyDuration(val) {
+            appState.keyDuration = val;
+        }
+
+        function updateTaxRate(val) {
+            appState.taxRate = parseFloat(val) || 0;
+            renderTable();
+        }
+
+        function updateProdCost(val) {
+            appState.productionCost = parseFloat(val) || 0;
+            updateTotalBaseCostDisplay();
+            recalculateAnalytics();
+        }
+
+        function updateHandlingCost(val) {
+            appState.handlingCost = parseFloat(val) || 0;
+            updateTotalBaseCostDisplay();
+            recalculateAnalytics();
+        }
+
+        function updateTotalBaseCostDisplay() {
+            const total = appState.productionCost + appState.handlingCost;
+            document.getElementById('display-total-base-cost').innerText = `₹${total.toFixed(2)} / key`;
+        }
+
+        // --- 6. DUAL-INPUT TIER MARGIN LOGIC ---
+        function onTierChange(tier, field, val) {
+            const value = parseFloat(val) || 0;
+            const basePrice = appState.products[appState.selectedProduct].basePrice;
+
+            if (field === 'percent') {
+                appState.tiers[tier].percent = value;
+                appState.tiers[tier].amount = (basePrice * (value / 100));
+            } else if (field === 'amount') {
+                appState.tiers[tier].amount = value;
+                appState.tiers[tier].percent = basePrice > 0 ? (value / basePrice) * 100 : 0;
+            }
+
+            syncTierInputs();
+            recalculateAnalytics();
+        }
+
+        function syncTierInputs() {
+            const basePrice = appState.products[appState.selectedProduct].basePrice;
+
+            ['T1', 'T2', 'T3'].forEach(t => {
+                const percentInput = document.getElementById(`${t.toLowerCase()}-percent`);
+                const amountInput = document.getElementById(`${t.toLowerCase()}-amount`);
+                const effectiveSpan = document.getElementById(`${t.toLowerCase()}-effective-price`);
+
+                percentInput.value = (appState.tiers[t].percent).toFixed(1);
+                amountInput.value = Math.round(appState.tiers[t].amount);
+
+                const partnerCost = basePrice - appState.tiers[t].amount;
+                effectiveSpan.innerText = `Partner Price: ₹${Math.max(0, partnerCost)}`;
+            });
+        }
+
+        // --- 7. DYNAMIC SCHEME SLABS TABLE RENDER ---
+        function renderTable() {
+            const tbody = document.getElementById('scheme-table-body');
+            tbody.innerHTML = '';
+
+            const basePrice = appState.products[appState.selectedProduct].basePrice;
+            const taxMultiplier = appState.taxRate / 100;
+
+            appState.slabs.forEach((slab, index) => {
+                const totalKeys = slab.boxQty * slab.keysPerBox;
+                const stockValue = totalKeys * basePrice;
+                const taxVal = stockValue * taxMultiplier;
+                const offerVal = stockValue * (slab.stockOfferPercent / 100);
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-800/40 transition border-b border-slate-800/60";
+
+                tr.innerHTML = `
+                    <td class="p-2.5">
+                        <input type="number" value="${slab.boxQty}" min="1" onchange="updateSlab(${index}, 'boxQty', this.value)" class="w-14 bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-white text-center focus:outline-none focus:border-indigo-500">
+                    </td>
+                    <td class="p-2.5">
+                        <input type="number" value="${slab.keysPerBox}" min="1" onchange="updateSlab(${index}, 'keysPerBox', this.value)" class="w-16 bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-white text-center focus:outline-none focus:border-indigo-500">
+                    </td>
+                    <td class="p-2.5 font-bold text-slate-200">${totalKeys}</td>
+                    <td class="p-2.5 text-slate-300">₹${stockValue.toLocaleString('en-IN')}</td>
+                    <td class="p-2.5 text-slate-400">₹${taxVal.toLocaleString('en-IN')}</td>
+                    <td class="p-2.5">
+                        <div class="flex items-center gap-1">
+                            <input type="number" value="${slab.stockOfferPercent}" min="0" max="100" onchange="updateSlab(${index}, 'stockOfferPercent', this.value)" class="w-14 bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-indigo-300 font-bold text-center focus:outline-none focus:border-indigo-500">
+                            <span>%</span>
+                        </div>
+                    </td>
+                    <td class="p-2.5 text-indigo-400 font-bold">₹${offerVal.toLocaleString('en-IN')}</td>
+                    <td class="p-2.5">
+                        <input type="number" value="${slab.rewardFreeKeys}" min="0" onchange="updateSlab(${index}, 'rewardFreeKeys', this.value)" class="w-14 bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-cyan-300 text-center focus:outline-none focus:border-cyan-500">
+                    </td>
+                    <td class="p-2.5">
+                        <input type="number" value="${slab.reward2}" min="0" onchange="updateSlab(${index}, 'reward2', this.value)" class="w-20 bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-emerald-300 text-center focus:outline-none focus:border-emerald-500">
+                    </td>
+                    <td class="p-2.5 no-print text-center">
+                        <button onclick="removeSlab(${index})" class="text-red-400 hover:text-red-300 p-1.5 rounded hover:bg-red-500/10 transition" title="Delete Row">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateSlab(index, field, val) {
+            appState.slabs[index][field] = parseFloat(val) || 0;
+            renderTable();
+            recalculateAnalytics();
+        }
+
+        function addSchemeRow() {
+            const nextId = appState.slabs.length + 1;
+            appState.slabs.push({
+                id: Date.now(),
+                boxQty: 10,
+                keysPerBox: 100,
+                stockOfferPercent: 20,
+                rewardFreeKeys: 20,
+                reward2: 10000
+            });
+            renderTable();
+            recalculateAnalytics();
+            showToast('New Scheme Row Added', 'info');
+        }
+
+        function removeSlab(index) {
+            if (appState.slabs.length <= 1) {
+                showToast('At least one scheme row is required!', 'error');
+                return;
+            }
+            appState.slabs.splice(index, 1);
+            renderTable();
+            recalculateAnalytics();
+            showToast('Row Removed', 'info');
+        }
+
+        // --- 8. UNIT ECONOMICS & PROFITABILITY ANALYTICS ---
+        function recalculateAnalytics() {
+            const basePrice = appState.products[appState.selectedProduct].basePrice;
+            const prodCost = appState.productionCost;
+            const handling = appState.handlingCost;
+            const totalBaseCost = prodCost + handling;
+
+            const worstSlab = appState.slabs.map(s => {
+                const totalKeys = s.boxQty * s.keysPerBox;
+                const freeKeyRate = totalKeys > 0 ? s.rewardFreeKeys / totalKeys : 0;
+                const cashRewardPerKey = totalKeys > 0 ? s.reward2 / totalKeys : 0;
+                const stockOfferPerKey = basePrice * (s.stockOfferPercent / 100);
+                return {
+                    stockOfferPercent: s.stockOfferPercent,
+                    stockOfferPerKey,
+                    freeKeyValuePerKey: basePrice * freeKeyRate,
+                    cashRewardPerKey,
+                    netRevenuePerKey: basePrice - totalBaseCost - stockOfferPerKey - (basePrice * freeKeyRate) - cashRewardPerKey
+                };
+            }).reduce((worst, scenario) => scenario.netRevenuePerKey < worst.netRevenuePerKey ? scenario : worst);
+            const stockOfferAllocation = worstSlab.stockOfferPerKey;
+            const freeKeyIncentiveVal = worstSlab.freeKeyValuePerKey;
+            const netProfitPerKey = worstSlab.netRevenuePerKey;
+
+            // Update DOM
+            document.getElementById('summary-prod-val').innerText = `₹${totalBaseCost.toFixed(2)}`;
+            document.getElementById('summary-prod-pct').innerText = basePrice > 0 ? `${((totalBaseCost / basePrice) * 100).toFixed(1)}% of Base Price` : '0%';
+
+            document.getElementById('summary-offer-val').innerText = `₹${stockOfferAllocation.toFixed(2)}`;
+            document.getElementById('summary-offer-pct').innerText = `${worstSlab.stockOfferPercent}% Worst-case slab offer`;
+
+            document.getElementById('summary-reward-val').innerText = `₹${(freeKeyIncentiveVal + worstSlab.cashRewardPerKey).toFixed(2)}`;
+            
+            document.getElementById('summary-net-profit').innerText = `₹${netProfitPerKey.toFixed(2)}`;
+            document.getElementById('summary-profit-margin').innerText = basePrice > 0 ? `${((netProfitPerKey / basePrice) * 100).toFixed(1)}% Net Margin` : '0%';
+
+            // Standard 300 Key Batch
+            const batchKeys = 300;
+            const batchStockVal = batchKeys * basePrice;
+            const batchOfferVal = batchStockVal * (worstSlab.stockOfferPercent / 100);
+            const batchNetProfit = batchKeys * netProfitPerKey;
+
+            document.getElementById('batch-stock-value').innerText = `₹${batchStockVal.toLocaleString('en-IN')}`;
+            document.getElementById('batch-offer-value').innerText = `₹${batchOfferVal.toLocaleString('en-IN')}`;
+            document.getElementById('batch-net-profit').innerText = `₹${batchNetProfit.toLocaleString('en-IN')}`;
+        }
+
+        function resetToDefaults() {
+            appState.selectedProduct = 'TS';
+            appState.products = {
+                AV: { name: 'Antivirus (AV)', basePrice: 300 },
+                IS: { name: 'Internet Security (IS)', basePrice: 400 },
+                TS: { name: 'Total Security (TS)', basePrice: 500 }
+            };
+            appState.taxRate = 18;
+            appState.productionCost = 120;
+            appState.handlingCost = 5;
+            appState.tiers = {
+                T1: { percent: 10, amount: 50 },
+                T2: { percent: 15, amount: 75 },
+                T3: { percent: 20, amount: 100 }
+            };
+            appState.slabs = [
+                { id: 1, boxQty: 1,  keysPerBox: 10,  stockOfferPercent: 20, rewardFreeKeys: 2,  reward2: 1000 },
+                { id: 2, boxQty: 2,  keysPerBox: 20,  stockOfferPercent: 20, rewardFreeKeys: 4,  reward2: 2000 },
+                { id: 3, boxQty: 5,  keysPerBox: 50,  stockOfferPercent: 20, rewardFreeKeys: 10, reward2: 5000 },
+                { id: 4, boxQty: 10, keysPerBox: 100, stockOfferPercent: 20, rewardFreeKeys: 20, reward2: 10000 },
+                { id: 5, boxQty: 15, keysPerBox: 150, stockOfferPercent: 20, rewardFreeKeys: 30, reward2: 15000 },
+                { id: 6, boxQty: 20, keysPerBox: 200, stockOfferPercent: 20, rewardFreeKeys: 40, reward2: 20000 },
+                { id: 7, boxQty: 30, keysPerBox: 300, stockOfferPercent: 33, rewardFreeKeys: 60, reward2: 30000 }
+            ];
+
+            renderProductTabs();
+            syncTierInputs();
+            renderTable();
+            recalculateAnalytics();
+            showToast('Reset to default values.', 'info');
+        }
+
+        // --- 9. EXPORT TO PDF ---
+        function exportToPDF() {
+            document.getElementById('print-date').innerText = new Date().toLocaleDateString('en-IN', {
+                year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+            window.print();
+        }
+
+        // --- 10. TOAST NOTIFICATION UTILITY ---
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let bgClass = "bg-slate-800 text-white border-slate-700";
+            let icon = "fa-info-circle text-indigo-400";
+
+            if (type === 'success') {
+                bgClass = "bg-emerald-950 text-emerald-100 border-emerald-800";
+                icon = "fa-circle-check text-emerald-400";
+            } else if (type === 'error') {
+                bgClass = "bg-red-950 text-red-100 border-red-800";
+                icon = "fa-triangle-exclamation text-red-400";
+            }
+
+            toast.className = `flex items-center gap-2.5 px-4 py-3 rounded-xl border text-xs font-medium shadow-xl transition-all duration-300 transform translate-y-2 ${bgClass}`;
+            const iconElement = document.createElement('i');
+            iconElement.className = `fa-solid ${icon}`;
+            const messageElement = document.createElement('span');
+            messageElement.textContent = message;
+            toast.append(iconElement, messageElement);
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', '-translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
