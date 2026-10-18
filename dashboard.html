@@ -445,7 +445,7 @@
             'scheme-volume': 'volume'
         };
         const LIBRARY_STORAGE_KEY = 'sentinel_variant_library_v1';
-        const state = { library: [], activeVariantId: null, mopFollowsBase: true, tierFilter: 'all' };
+        const state = { library: [], activeVariantId: null, expandedCategory: undefined, mopFollowsBase: true, tierFilter: 'all' };
         const currencyFormatter = new Intl.NumberFormat('en-IN', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
@@ -582,6 +582,11 @@
         function renderVariantLibrary() {
             const container = document.getElementById('variant-groups');
             container.replaceChildren();
+            const activeVariant = getActiveVariant();
+            const activeCategory = activeVariant?.category || null;
+            const expandedCategory = state.expandedCategory === undefined
+                ? activeCategory
+                : state.expandedCategory;
             [
                 { key: 'AV', label: 'Antivirus (AV)' },
                 { key: 'IS', label: 'Internet Security (IS)' },
@@ -589,9 +594,22 @@
                 { key: 'custom', label: 'Custom Variants' }
             ].forEach(group => {
                 const variants = state.library.filter(variant => variant.category === group.key);
+                const isActive = group.key === activeCategory;
                 const details = document.createElement('details');
-                details.open = variants.length > 0;
-                details.className = 'overflow-hidden rounded-lg border border-slate-800 bg-slate-900/60';
+                details.open = group.key === expandedCategory;
+                details.className = isActive
+                    ? 'overflow-hidden rounded-lg border border-indigo-700/70 bg-indigo-950/20 shadow-sm shadow-indigo-950/30'
+                    : 'overflow-hidden rounded-lg border border-slate-800 bg-slate-900/60';
+                details.addEventListener('toggle', () => {
+                    if (details.open) {
+                        state.expandedCategory = group.key;
+                        container.querySelectorAll('details[open]').forEach(otherDetails => {
+                            if (otherDetails !== details) otherDetails.open = false;
+                        });
+                    } else if (state.expandedCategory === group.key) {
+                        state.expandedCategory = null;
+                    }
+                });
                 const summary = document.createElement('summary');
                 summary.className = 'flex cursor-pointer list-none items-center justify-between gap-2 px-2.5 py-2 text-[11px] font-semibold text-slate-300 hover:bg-slate-800/70';
                 const label = document.createElement('span');
@@ -603,9 +621,9 @@
                 count.className = 'rounded-full border border-slate-700 bg-slate-950/80 px-1.5 py-0.5 text-[9px] tabular-nums text-slate-400';
                 count.textContent = String(variants.length);
                 badges.append(count);
-                if (variants.some(variant => variant.id === state.activeVariantId)) {
+                if (isActive) {
                     const active = document.createElement('span');
-                    active.className = 'rounded-full border border-indigo-700/60 bg-indigo-950/70 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-indigo-300';
+                    active.className = 'rounded-full border border-indigo-500/70 bg-indigo-500/15 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-indigo-200';
                     active.textContent = 'Active';
                     badges.append(active);
                 }
@@ -662,6 +680,7 @@
                 return;
             }
             state.activeVariantId = variant.id;
+            state.expandedCategory = variant.category;
             state.mopFollowsBase = variant.mop === null;
             Object.entries(durationInputMap).forEach(([inputId, field]) => {
                 document.getElementById(inputId).value = variant.config[field];
